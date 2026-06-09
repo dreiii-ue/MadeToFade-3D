@@ -13,6 +13,7 @@ if(isset($_POST['checkout'])){
 
     $address = $_POST['address'];
     $contact_number = $_POST['contact_number'];
+    $payment_method = $_POST['payment_method'];
 
     $cart = mysqli_query($conn,
     "SELECT cart.*, products.price
@@ -31,9 +32,28 @@ if(isset($_POST['checkout'])){
         $total += $item['price'] * $item['quantity'];
     }
 
-    mysqli_query($conn,
-    "INSERT INTO orders(customer_id, total, order_status, delivery_status, address, contact_number)
-     VALUES('$customer_id', '$total', 'Pending', 'Preparing', '$address', '$contact_number')");
+    mysqli_query($conn, "
+        INSERT INTO orders (
+            customer_id,
+            total,
+            order_status,
+            delivery_status,
+            address,
+            contact_number,
+            payment_method,
+            payment_status
+        )
+        VALUES (
+            '$customer_id',
+            '$total',
+            'Pending',
+            'Preparing',
+            '$address',
+            '$contact_number',
+            '$payment_method',
+            'Pending'
+        )
+    ");
 
     $order_id = mysqli_insert_id($conn);
 
@@ -45,11 +65,6 @@ if(isset($_POST['checkout'])){
         mysqli_query($conn,
         "INSERT INTO order_items(order_id, product_id, quantity)
          VALUES('$order_id', '{$item['product_id']}', '{$item['quantity']}')");
-
-        mysqli_query($conn,
-        "UPDATE products
-         SET stock = stock - {$item['quantity']}
-         WHERE id='{$item['product_id']}'");
     }
 
     mysqli_query($conn,

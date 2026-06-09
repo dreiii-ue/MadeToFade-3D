@@ -1,5 +1,7 @@
 DROP DATABASE IF EXISTS made_to_fade;
+
 CREATE DATABASE made_to_fade;
+
 USE made_to_fade;
 
 CREATE TABLE users (
@@ -32,9 +34,12 @@ CREATE TABLE orders (
     total DECIMAL(10,2),
     order_status VARCHAR(50),
     delivery_status VARCHAR(50),
-    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    payment_method VARCHAR(50),
+    payment_status VARCHAR(50) DEFAULT 'Pending',
+    stock_deducted VARCHAR(10) DEFAULT 'No',
     address VARCHAR(255),
-    contact_number VARCHAR(20)
+    contact_number VARCHAR(20),
+    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE order_items (
@@ -55,9 +60,9 @@ INSERT INTO products (name, price, stock, image) VALUES
 ('Oversized Street Tee', 699.00, 10, 'shirt3.jpg');
 
 INSERT INTO orders 
-(customer_id, courier_id, total, order_status, delivery_status, address, contact_number)
+(customer_id, courier_id, total, order_status, delivery_status, payment_method, payment_status, stock_deducted, address, contact_number)
 VALUES
-(2, 3, 499.00, 'Processing', 'Ready for Pickup', 'Sample Address', '09123456789');
+(2, 3, 499.00, 'Processing', 'Ready for Pickup', 'Cash on Delivery', 'Paid', 'Yes', 'Sample Address', '0912 123 1234');
 
 INSERT INTO order_items (order_id, product_id, quantity)
 VALUES

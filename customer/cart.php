@@ -67,7 +67,7 @@ $total = 0;
     <h2>MADE TO FADE</h2>
 
     <div>
-        <a href="home.php">Shop</a>
+        <a href="../index.php">Shop</a>
         <a href="cart.php">Cart</a>
         <a href="orders.php">My Orders</a>
         <a href="../logout.php">Logout</a>
@@ -122,9 +122,18 @@ $total = 0;
            required>
 
     <input type="text"
-           name="contact_number"
-           placeholder="Contact Number"
-           required>
+       name="contact_number"
+       placeholder="0912 123 1234"
+       pattern="09[0-9]{2} [0-9]{3} [0-9]{4}"
+       required>
+
+    <select name="payment_method" required>
+        <option value="">Payment Method</option>
+        <option value="Cash on Delivery">Cash on Delivery</option>
+        <option value="GCash">GCash</option>
+        <option value="Maya">Maya</option>
+        <option value="Bank Transfer">Bank Transfer</option>
+    </select>
 
     <button type="submit" name="checkout" class="btn">
         Checkout
