@@ -5,6 +5,8 @@ include "includes/config.php";
 $result = mysqli_query($conn, "SELECT * FROM products WHERE stock > 0");
 ?>
 
+<!-- DREI -->
+
 <!DOCTYPE html>
 <html>
 <head>
