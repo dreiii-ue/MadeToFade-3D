@@ -68,8 +68,11 @@ $result = mysqli_query($conn,
     <th>Order ID</th>
     <th>Customer</th>
     <th>Total</th>
+    <th>Payment Method</th>
+    <th>Payment Status</th>
     <th>Address</th>
     <th>Contact</th>
+
     <th>Status</th>
     <th>Update</th>
 </tr>
@@ -83,6 +86,14 @@ $result = mysqli_query($conn,
     <td><?php echo $row['fullname']; ?></td>
 
     <td>₱<?php echo $row['total']; ?></td>
+
+    <td><?php echo $row['payment_method']; ?></td>
+    <td>
+        <span class="status <?php echo $row['payment_status'] == 'Paid' ? 'completed' : 'pending'; ?>">
+            <?php echo $row['payment_status']; ?>
+        </span>
+    </td>
+
     <td><?php echo $row['address']; ?></td>
     <td><?php echo $row['contact_number']; ?></td>
 
