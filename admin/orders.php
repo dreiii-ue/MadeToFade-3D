@@ -100,6 +100,24 @@ $couriers = mysqli_query($conn,
 <a href="dashboard.php" class="btn">Back</a>
 
 <br><br>
+<form method="GET" action="products.php" style="margin-bottom:15px; display:flex; gap:10px; align-items:center;">
+  
+    <select name="courier_name" class="form-control">
+        <option value="">-- Select Courier --</option>
+        <
+    </select>
+
+    <select name="delivery_status" class="form-control">
+        <option value="">-- All Status --</option>
+        <option value="pending" <?php if(isset($_GET['delivery_status']) && $_GET['delivery_status']=="pending") echo "selected"; ?>>Pending</option>
+        <option value="delivered" <?php if(isset($_GET['delivery_status']) && $_GET['delivery_status']=="delivered") echo "selected"; ?>>Delivered</option>
+        <option value="cancelled" <?php if(isset($_GET['delivery_status']) && $_GET['delivery_status']=="cancelled") echo "selected"; ?>>Cancelled</option>
+    </select>
+
+    <button type="submit" class="btn btn-dark">Search</button>
+
+    <a href="products.php" class="btn btn-link text-danger">Reset</a>
+</form>
 
 <table>
 <tr>

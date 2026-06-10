@@ -98,7 +98,20 @@ if(isset($_GET['edit'])){
     $product = mysqli_fetch_assoc($edit_result);
 }
 
-$result = mysqli_query($conn, "SELECT * FROM products ORDER BY id DESC");
+$courier_name   = isset($_GET['courier_name']) ? $_GET['courier_name'] : '';
+$delivery_status = isset($_GET['delivery_status']) ? $_GET['delivery_status'] : '';
+
+$sql = "SELECT * FROM products WHERE 1=1";
+
+if (!empty($courier_name)) {
+    $sql .= " AND courier_name = '" . mysqli_real_escape_string($conn, $courier_name) . "'";
+}
+if (!empty($delivery_status)) {
+    $sql .= " AND status = '" . mysqli_real_escape_string($conn, $delivery_status) . "'";
+}
+
+$sql .= " ORDER BY id DESC";
+$result = mysqli_query($conn, $sql);
 ?>
 
 <!DOCTYPE html>
@@ -162,6 +175,25 @@ $result = mysqli_query($conn, "SELECT * FROM products ORDER BY id DESC");
 
 <br>
 
+<form method="GET" action="products.php" style="margin-bottom:15px; display:flex; gap:10px; align-items:center;">
+  
+    <select name="courier_name" class="form-control">
+        <option value="">-- Select Courier --</option>
+        <
+    </select>
+
+    <select name="delivery_status" class="form-control">
+        <option value="">-- All Status --</option>
+        <option value="pending" <?php if(isset($_GET['delivery_status']) && $_GET['delivery_status']=="pending") echo "selected"; ?>>Pending</option>
+        <option value="delivered" <?php if(isset($_GET['delivery_status']) && $_GET['delivery_status']=="delivered") echo "selected"; ?>>Delivered</option>
+        <option value="cancelled" <?php if(isset($_GET['delivery_status']) && $_GET['delivery_status']=="cancelled") echo "selected"; ?>>Cancelled</option>
+    </select>
+
+    <button type="submit" class="btn btn-dark">Search</button>
+
+    <a href="products.php" class="btn btn-link text-danger">Reset</a>
+</form>
+
 <table>
 <tr>
     <th>ID</th>
@@ -175,6 +207,7 @@ $result = mysqli_query($conn, "SELECT * FROM products ORDER BY id DESC");
     <th>Stock</th>
     <th>Action</th>
 </tr>
+
 
 <?php while($row = mysqli_fetch_assoc($result)){ ?>
 <tr>
