@@ -43,6 +43,31 @@ if(isset($_POST['mark_paid'])){
     exit();
 }
 
+$search = isset($_GET['search']) ? $_GET['search'] : "";
+$payment = isset($_GET['payment']) ? $_GET['payment'] : "";
+$delivery = isset($_GET['delivery']) ? $_GET['delivery'] : "";
+
+$sql = "SELECT orders.*, users.fullname
+        FROM orders
+        JOIN users ON orders.customer_id = users.id
+        WHERE 1=1";
+
+if($search != ""){
+    $sql .= " AND (orders.id LIKE '%$search%' OR users.fullname LIKE '%$search%')";
+}
+
+if($payment != ""){
+    $sql .= " AND orders.payment_status='$payment'";
+}
+
+if($delivery != ""){
+    $sql .= " AND orders.delivery_status='$delivery'";
+}
+
+$sql .= " ORDER BY orders.id DESC";
+
+$orders = mysqli_query($conn, $sql);
+
 $orders = mysqli_query($conn,
 "SELECT orders.*, users.fullname
  FROM orders
@@ -100,24 +125,36 @@ $couriers = mysqli_query($conn,
 <a href="dashboard.php" class="btn">Back</a>
 
 <br><br>
-<form method="GET" action="products.php" style="margin-bottom:15px; display:flex; gap:10px; align-items:center;">
-  
-    <select name="courier_name" class="form-control">
-        <option value="">-- Select Courier --</option>
-        <
-    </select>
+<div class="panel">
+    <form method="GET" class="filter-wrapper">
 
-    <select name="delivery_status" class="form-control">
-        <option value="">-- All Status --</option>
-        <option value="pending" <?php if(isset($_GET['delivery_status']) && $_GET['delivery_status']=="pending") echo "selected"; ?>>Pending</option>
-        <option value="delivered" <?php if(isset($_GET['delivery_status']) && $_GET['delivery_status']=="delivered") echo "selected"; ?>>Delivered</option>
-        <option value="cancelled" <?php if(isset($_GET['delivery_status']) && $_GET['delivery_status']=="cancelled") echo "selected"; ?>>Cancelled</option>
-    </select>
+        <input type="text"
+            name="search"
+            placeholder="Search order ID or customer"
+            value="<?php echo $search; ?>">
 
-    <button type="submit" class="btn btn-dark">Search</button>
+        <select name="payment">
+            <option value="">All Payment</option>
+            <option value="Pending" <?php if($payment=="Pending") echo "selected"; ?>>Pending</option>
+            <option value="Paid" <?php if($payment=="Paid") echo "selected"; ?>>Paid</option>
+        </select>
 
-    <a href="products.php" class="btn btn-link text-danger">Reset</a>
-</form>
+        <select name="delivery">
+            <option value="">All Delivery</option>
+            <option value="Preparing" <?php if($delivery=="Preparing") echo "selected"; ?>>Preparing</option>
+            <option value="Ready for Pickup" <?php if($delivery=="Ready for Pickup") echo "selected"; ?>>Ready for Pickup</option>
+            <option value="Picked Up" <?php if($delivery=="Picked Up") echo "selected"; ?>>Picked Up</option>
+            <option value="Out for Delivery" <?php if($delivery=="Out for Delivery") echo "selected"; ?>>Out for Delivery</option>
+            <option value="Delivered" <?php if($delivery=="Delivered") echo "selected"; ?>>Delivered</option>
+        </select>
+
+        <button type="submit" class="btn">Filter</button>
+
+        <a href="orders.php" class="btn">Reset</a>
+
+    </form>
+</div>
+<br>
 
 <table>
 <tr>
@@ -218,18 +255,15 @@ $couriers = mysqli_query($conn,
     </td>
 
     <td>
-        <form method="POST">
+        <form method="POST" class="assign-form">
 
-            <input type="hidden"
-                   name="order_id"
-                   value="<?php echo $row['id']; ?>">
+            <input type="hidden" name="order_id" value="<?php echo $row['id']; ?>">
 
             <select name="courier_id" required>
                 <option value="">Select Courier</option>
 
                 <?php
                 mysqli_data_seek($couriers, 0);
-
                 while($courier = mysqli_fetch_assoc($couriers)){
                 ?>
                     <option value="<?php echo $courier['id']; ?>">

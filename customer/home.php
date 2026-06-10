@@ -18,16 +18,16 @@ if(isset($_POST['update_profile'])){
     if($password == ""){
         mysqli_query($conn,
         "UPDATE users SET
-         fullname='$fullname',
-         username='$username'
+            fullname='$fullname',
+            username='$username'
          WHERE id='$user_id'");
     }
     else{
         mysqli_query($conn,
         "UPDATE users SET
-         fullname='$fullname',
-         username='$username',
-         password='$password'
+            fullname='$fullname',
+            username='$username',
+            password='$password'
          WHERE id='$user_id'");
     }
 
@@ -57,7 +57,7 @@ $cart_count = mysqli_fetch_assoc(mysqli_query($conn,
 
 <div class="navbar">
     <div class="logo-area">
-        <img src="images/logo.png" alt="Logo">
+        <img src="../images/logo.png" alt="Logo">
     </div>
 
     <div>
@@ -108,9 +108,7 @@ $cart_count = mysqli_fetch_assoc(mysqli_query($conn,
     <label>New Password</label>
     <input type="password" name="password" placeholder="Leave blank if no change">
 
-    <button type="submit" name="update_profile" class="btn">
-        Save Changes
-    </button>
+    <button type="submit" name="update_profile" class="btn">Save Changes</button>
 
 </form>
 

@@ -10,7 +10,9 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != "customer"){
 $customer_id = $_SESSION['user_id'];
 
 $result = mysqli_query($conn,
-"SELECT * FROM orders WHERE customer_id='$customer_id' ORDER BY id DESC");
+"SELECT * FROM orders
+ WHERE customer_id='$customer_id'
+ ORDER BY id DESC");
 ?>
 
 <!DOCTYPE html>
@@ -23,11 +25,12 @@ $result = mysqli_query($conn,
 
 <div class="navbar">
     <div class="logo-area">
-        <img src="images/logo.png" alt="Logo">
+        <img src="../images/logo.png" alt="Logo">
     </div>
 
     <div>
-        <a href="home.php">Shop</a>
+        <a href="../index.php">Shop</a>
+        <a href="home.php">Dashboard</a>
         <a href="cart.php">Cart</a>
         <a href="orders.php">My Orders</a>
         <a href="../logout.php">Logout</a>
@@ -42,6 +45,8 @@ $result = mysqli_query($conn,
 <tr>
     <th>Order ID</th>
     <th>Total</th>
+    <th>Payment Method</th>
+    <th>Payment Status</th>
     <th>Order Status</th>
     <th>Delivery Status</th>
     <th>Date</th>
@@ -50,15 +55,22 @@ $result = mysqli_query($conn,
 
 <?php while($row = mysqli_fetch_assoc($result)){ ?>
 <tr>
-    <td><?php echo $row['id']; ?></td>
+    <td>#<?php echo $row['id']; ?></td>
     <td>₱<?php echo $row['total']; ?></td>
+    <td><?php echo $row['payment_method']; ?></td>
+
+    <td>
+        <span class="status <?php echo $row['payment_status'] == 'Paid' ? 'completed' : 'pending'; ?>">
+            <?php echo $row['payment_status']; ?>
+        </span>
+    </td>
+
     <td><?php echo $row['order_status']; ?></td>
     <td><?php echo $row['delivery_status']; ?></td>
     <td><?php echo $row['date_created']; ?></td>
+
     <td>
-        <a href="order_details.php?id=<?php echo $row['id']; ?>" class="btn">
-            View
-        </a>
+        <a href="order_details.php?id=<?php echo $row['id']; ?>" class="btn">View</a>
     </td>
 </tr>
 <?php } ?>

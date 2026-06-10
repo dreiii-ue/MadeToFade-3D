@@ -32,28 +32,31 @@ if(isset($_POST['checkout'])){
         $total += $item['price'] * $item['quantity'];
     }
 
-    mysqli_query($conn, "
-        INSERT INTO orders (
-            customer_id,
-            total,
-            order_status,
-            delivery_status,
-            address,
-            contact_number,
-            payment_method,
-            payment_status
-        )
-        VALUES (
-            '$customer_id',
-            '$total',
-            'Pending',
-            'Preparing',
-            '$address',
-            '$contact_number',
-            '$payment_method',
-            'Pending'
-        )
-    ");
+    mysqli_query($conn,
+    "INSERT INTO orders(
+        customer_id,
+        total,
+        order_status,
+        delivery_status,
+        address,
+        contact_number,
+        payment_method,
+        payment_status,
+        stock_deducted,
+        proof_image
+     )
+     VALUES(
+        '$customer_id',
+        '$total',
+        'Pending',
+        'Preparing',
+        '$address',
+        '$contact_number',
+        '$payment_method',
+        'Pending',
+        'No',
+        ''
+     )");
 
     $order_id = mysqli_insert_id($conn);
 
@@ -61,7 +64,6 @@ if(isset($_POST['checkout'])){
     "SELECT * FROM cart WHERE customer_id='$customer_id'");
 
     while($item = mysqli_fetch_assoc($cart_items)){
-
         mysqli_query($conn,
         "INSERT INTO order_items(order_id, product_id, quantity)
          VALUES('$order_id', '{$item['product_id']}', '{$item['quantity']}')");

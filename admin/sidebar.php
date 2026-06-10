@@ -39,6 +39,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <small><?php echo $_SESSION['fullname']; ?></small>
     </div>
 
+    <br>
+
     <a href="../logout.php" class="menu-item logout">
         <i class="fa-solid fa-right-from-bracket"></i>
         Logout

@@ -23,7 +23,7 @@ if(isset($_POST['add'])){
     $image = $_FILES['image']['name'];
     $tmp = $_FILES['image']['tmp_name'];
 
-    move_uploaded_file($tmp, "../images/".$image);
+    move_uploaded_file($tmp, "../images/" . $image);
 
     mysqli_query($conn,
     "INSERT INTO products(name, price, stock, image, category, sku, color, size)
@@ -50,30 +50,30 @@ if(isset($_POST['update'])){
         $image = $_FILES['image']['name'];
         $tmp = $_FILES['image']['tmp_name'];
 
-        move_uploaded_file($tmp, "../images/".$image);
+        move_uploaded_file($tmp, "../images/" . $image);
 
         mysqli_query($conn,
         "UPDATE products SET
-         name='$name',
-         price='$price',
-         stock='$stock',
-         image='$image',
-         category='$category',
-         sku='$sku',
-         color='$color',
-         size='$size'
+            name='$name',
+            price='$price',
+            stock='$stock',
+            image='$image',
+            category='$category',
+            sku='$sku',
+            color='$color',
+            size='$size'
          WHERE id='$id'");
     }
     else{
         mysqli_query($conn,
         "UPDATE products SET
-         name='$name',
-         price='$price',
-         stock='$stock',
-         category='$category',
-         sku='$sku',
-         color='$color',
-         size='$size'
+            name='$name',
+            price='$price',
+            stock='$stock',
+            category='$category',
+            sku='$sku',
+            color='$color',
+            size='$size'
          WHERE id='$id'");
     }
 
@@ -82,6 +82,7 @@ if(isset($_POST['update'])){
 }
 
 if(isset($_GET['delete'])){
+
     $id = $_GET['delete'];
 
     mysqli_query($conn, "DELETE FROM products WHERE id='$id'");
@@ -91,6 +92,7 @@ if(isset($_GET['delete'])){
 }
 
 if(isset($_GET['edit'])){
+
     $edit = true;
     $id = $_GET['edit'];
 
@@ -98,19 +100,30 @@ if(isset($_GET['edit'])){
     $product = mysqli_fetch_assoc($edit_result);
 }
 
-$courier_name   = isset($_GET['courier_name']) ? $_GET['courier_name'] : '';
-$delivery_status = isset($_GET['delivery_status']) ? $_GET['delivery_status'] : '';
+$search = isset($_GET['search']) ? $_GET['search'] : "";
+$category_filter = isset($_GET['category']) ? $_GET['category'] : "";
+$stock_filter = isset($_GET['stock_filter']) ? $_GET['stock_filter'] : "";
 
 $sql = "SELECT * FROM products WHERE 1=1";
 
-if (!empty($courier_name)) {
-    $sql .= " AND courier_name = '" . mysqli_real_escape_string($conn, $courier_name) . "'";
+if($search != ""){
+    $sql .= " AND (name LIKE '%$search%' OR sku LIKE '%$search%' OR color LIKE '%$search%')";
 }
-if (!empty($delivery_status)) {
-    $sql .= " AND status = '" . mysqli_real_escape_string($conn, $delivery_status) . "'";
+
+if($category_filter != ""){
+    $sql .= " AND category='$category_filter'";
+}
+
+if($stock_filter == "low"){
+    $sql .= " AND stock <= 5";
+}
+
+if($stock_filter == "available"){
+    $sql .= " AND stock > 5";
 }
 
 $sql .= " ORDER BY id DESC";
+
 $result = mysqli_query($conn, $sql);
 ?>
 
@@ -118,8 +131,11 @@ $result = mysqli_query($conn, $sql);
 <html>
 <head>
     <title>Products</title>
+
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 
@@ -131,68 +147,84 @@ $result = mysqli_query($conn, $sql);
 
 <h1>Inventory Management</h1>
 
-<form method="POST" enctype="multipart/form-data" class="product-form">
+<div class="panel">
+    <form method="POST" enctype="multipart/form-data" class="product-form">
 
-    <input type="hidden" name="id" value="<?php echo $edit ? $product['id'] : ''; ?>">
+        <input type="hidden" name="id" value="<?php echo $edit ? $product['id'] : ''; ?>">
 
-    <input type="text" name="name" placeholder="Product Name"
-           value="<?php echo $edit ? $product['name'] : ''; ?>" required>
+        <input type="text" name="name" placeholder="Product Name"
+            value="<?php echo $edit ? $product['name'] : ''; ?>" required>
 
-    <input type="number" name="price" placeholder="Price"
-           value="<?php echo $edit ? $product['price'] : ''; ?>" required>
+        <input type="number" name="price" placeholder="Price"
+            value="<?php echo $edit ? $product['price'] : ''; ?>" required>
 
-    <input type="number" name="stock" placeholder="Stock"
-           value="<?php echo $edit ? $product['stock'] : ''; ?>" required>
+        <input type="number" name="stock" placeholder="Stock"
+            value="<?php echo $edit ? $product['stock'] : ''; ?>" required>
 
-    <select name="category" required>
-        <option value="">Select Category</option>
-        <option value="T-Shirt" <?php if($edit && $product['category']=="T-Shirt") echo "selected"; ?>>T-Shirt</option>
-        <option value="Cropped T-Shirt" <?php if($edit && $product['category']=="Cropped T-Shirt") echo "selected"; ?>>Cropped T-Shirt</option>
-        <option value="Jacket" <?php if($edit && $product['category']=="Jacket") echo "selected"; ?>>Jacket</option>
-        <option value="Pants" <?php if($edit && $product['category']=="Pants") echo "selected"; ?>>Pants</option>
-        <option value="Shorts" <?php if($edit && $product['category']=="Shorts") echo "selected"; ?>>Shorts</option>
-    </select>
+        <select name="category" required>
+            <option value="">Select Category</option>
+            <option value="T-Shirt" <?php if($edit && $product['category']=="T-Shirt") echo "selected"; ?>>T-Shirt</option>
+            <option value="Cropped T-Shirt" <?php if($edit && $product['category']=="Cropped T-Shirt") echo "selected"; ?>>Cropped T-Shirt</option>
+            <option value="Jacket" <?php if($edit && $product['category']=="Jacket") echo "selected"; ?>>Jacket</option>
+            <option value="Pants" <?php if($edit && $product['category']=="Pants") echo "selected"; ?>>Pants</option>
+            <option value="Shorts" <?php if($edit && $product['category']=="Shorts") echo "selected"; ?>>Shorts</option>
+        </select>
 
-    <input type="text" name="color" placeholder="Color"
-           value="<?php echo $edit ? $product['color'] : ''; ?>" required>
+        <input type="text" name="color" placeholder="Color"
+            value="<?php echo $edit ? $product['color'] : ''; ?>" required>
 
-    <select name="size" required>
-        <option value="">Size</option>
-        <option value="XS" <?php if($edit && $product['size']=="XS") echo "selected"; ?>>XS</option>
-        <option value="S" <?php if($edit && $product['size']=="S") echo "selected"; ?>>S</option>
-        <option value="M" <?php if($edit && $product['size']=="M") echo "selected"; ?>>M</option>
-        <option value="L" <?php if($edit && $product['size']=="L") echo "selected"; ?>>L</option>
-        <option value="XL" <?php if($edit && $product['size']=="XL") echo "selected"; ?>>XL</option>
-    </select>
+        <select name="size" required>
+            <option value="">Size</option>
+            <option value="XS" <?php if($edit && $product['size']=="XS") echo "selected"; ?>>XS</option>
+            <option value="S" <?php if($edit && $product['size']=="S") echo "selected"; ?>>S</option>
+            <option value="M" <?php if($edit && $product['size']=="M") echo "selected"; ?>>M</option>
+            <option value="L" <?php if($edit && $product['size']=="L") echo "selected"; ?>>L</option>
+            <option value="XL" <?php if($edit && $product['size']=="XL") echo "selected"; ?>>XL</option>
+        </select>
 
-    <input type="file" name="image">
+        <input type="file" name="image" <?php if(!$edit) echo "required"; ?>>
 
-    <button type="submit" name="<?php echo $edit ? 'update' : 'add'; ?>" class="btn">
-        <?php echo $edit ? 'Update Product' : 'Add Product'; ?>
-    </button>
+        <button type="submit" name="<?php echo $edit ? 'update' : 'add'; ?>" class="btn">
+            <?php echo $edit ? 'Update Product' : 'Add Product'; ?>
+        </button>
 
-</form>
+    </form>
+</div>
 
 <br>
 
-<form method="GET" action="products.php" style="margin-bottom:15px; display:flex; gap:10px; align-items:center;">
-  
-    <select name="courier_name" class="form-control">
-        <option value="">-- Select Courier --</option>
-        <
-    </select>
+<div class="panel">
+    <form method="GET" class="filter-wrapper">
 
-    <select name="delivery_status" class="form-control">
-        <option value="">-- All Status --</option>
-        <option value="pending" <?php if(isset($_GET['delivery_status']) && $_GET['delivery_status']=="pending") echo "selected"; ?>>Pending</option>
-        <option value="delivered" <?php if(isset($_GET['delivery_status']) && $_GET['delivery_status']=="delivered") echo "selected"; ?>>Delivered</option>
-        <option value="cancelled" <?php if(isset($_GET['delivery_status']) && $_GET['delivery_status']=="cancelled") echo "selected"; ?>>Cancelled</option>
-    </select>
+        <input type="text"
+            name="search"
+            placeholder="Search product, SKU, color"
+            value="<?php echo $search; ?>">
 
-    <button type="submit" class="btn btn-dark">Search</button>
+        <select name="category">
+            <option value="">All Categories</option>
+            <option value="T-Shirt" <?php if($category_filter=="T-Shirt") echo "selected"; ?>>T-Shirt</option>
+            <option value="Cropped T-Shirt" <?php if($category_filter=="Cropped T-Shirt") echo "selected"; ?>>Cropped T-Shirt</option>
+            <option value="Jacket" <?php if($category_filter=="Jacket") echo "selected"; ?>>Jacket</option>
+            <option value="Pants" <?php if($category_filter=="Pants") echo "selected"; ?>>Pants</option>
+            <option value="Shorts" <?php if($category_filter=="Shorts") echo "selected"; ?>>Shorts</option>
+        </select>
 
-    <a href="products.php" class="btn btn-link text-danger">Reset</a>
-</form>
+        <select name="stock_filter">
+            <option value="">All Stock</option>
+            <option value="low" <?php if($stock_filter=="low") echo "selected"; ?>>Low Stock</option>
+            <option value="available" <?php if($stock_filter=="available") echo "selected"; ?>>Available Stock</option>
+        </select>
+
+        <button type="submit" class="btn">Filter</button>
+
+        <a href="products.php" class="btn">Reset</a>
+
+    </form>
+</div>
+
+<br>
+
 
 <table>
 <tr>
@@ -207,7 +239,6 @@ $result = mysqli_query($conn, $sql);
     <th>Stock</th>
     <th>Action</th>
 </tr>
-
 
 <?php while($row = mysqli_fetch_assoc($result)){ ?>
 <tr>
