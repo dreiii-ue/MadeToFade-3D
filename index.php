@@ -2,10 +2,8 @@
 session_start();
 include "includes/config.php";
 
-$result = mysqli_query($conn, "SELECT * FROM products WHERE stock > 0");
+$result = mysqli_query($conn, "SELECT * FROM products WHERE stock > 0 ORDER BY id DESC");
 ?>
-
-<!-- DREI -->
 
 <!DOCTYPE html>
 <html>
@@ -49,6 +47,10 @@ $result = mysqli_query($conn, "SELECT * FROM products WHERE stock > 0");
         <img src="images/<?php echo $row['image']; ?>">
 
         <h3><?php echo $row['name']; ?></h3>
+
+        <p><?php echo $row['category']; ?></p>
+
+        <p><?php echo $row['color']; ?> / <?php echo $row['size']; ?></p>
 
         <p>₱<?php echo $row['price']; ?></p>
 

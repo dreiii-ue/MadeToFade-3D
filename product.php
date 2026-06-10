@@ -13,6 +13,9 @@ $product = mysqli_fetch_assoc($result);
 <head>
     <title><?php echo $product['name']; ?></title>
     <link rel="stylesheet" type="text/css" href="css/style.css">
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 
@@ -31,17 +34,14 @@ $product = mysqli_fetch_assoc($result);
             <a href="register.php">Register</a>
         <?php } ?>
     </div>
-
-
 </div>
 
 <div class="product-back">
-
     <a href="index.php" class="back-btn">
-        <i class="fa-solid fa-arrow-left"></i> Back to Products
+        <i class="fa-solid fa-arrow-left"></i>
+        Back to Products
     </a>
 </div>
-
 
 <div class="product-view">
 
@@ -54,7 +54,11 @@ $product = mysqli_fetch_assoc($result);
 
         <h2>₱<?php echo $product['price']; ?></h2>
 
-        <p>Available Stock: <?php echo $product['stock']; ?></p>
+        <p><strong>SKU:</strong> <?php echo $product['sku']; ?></p>
+        <p><strong>Category:</strong> <?php echo $product['category']; ?></p>
+        <p><strong>Color:</strong> <?php echo $product['color']; ?></p>
+        <p><strong>Size:</strong> <?php echo $product['size']; ?></p>
+        <p><strong>Available Stock:</strong> <?php echo $product['stock']; ?></p>
 
         <form method="POST" action="customer/cart.php">
 

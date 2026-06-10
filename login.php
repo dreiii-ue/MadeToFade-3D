@@ -44,10 +44,12 @@ if(isset($_POST['login'])){
     <title>Login</title>
     <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
-<body>
+<body class="dark-bg">
 
 <div class="navbar">
-    <h2>MADE TO FADE</h2>
+    <div class="logo-area">
+        <img src="images/logo.png" alt="Logo">
+    </div>
 
     <div>
         <a href="index.php">Home</a>
@@ -73,7 +75,7 @@ if(isset($_POST['login'])){
 
     </form>
 
-    <p>No account yet? <a href="register.php">Register</a></p>
+    <p>No account yet? <a href="register.php" class="underline">Register</a></p>
 
 </div>
 

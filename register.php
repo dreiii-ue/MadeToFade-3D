@@ -22,10 +22,12 @@ if(isset($_POST['register'])){
     <title>Register</title>
     <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
-<body>
+<body class="dark-bg">
 
 <div class="navbar">
-    <h2>MADE TO FADE</h2>
+    <div class="logo-area">
+        <img src="images/logo.png" alt="Logo">
+    </div>
 
     <div>
         <a href="index.php">Home</a>
@@ -49,7 +51,7 @@ if(isset($_POST['register'])){
 
     </form>
 
-    <p>Already have an account? <a href="login.php">Login</a></p>
+    <p>Already have an account? <a href="login.php" class="underline">Login</a></p>
 
 </div>
 

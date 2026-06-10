@@ -33,7 +33,9 @@ if(isset($_POST['reset'])){
 <body>
 
 <div class="navbar">
-    <h2>MADE TO FADE</h2>
+    <div class="logo-area">
+        <img src="images/logo.png" alt="Logo">
+    </div>
 
     <div>
         <a href="index.php">Home</a>

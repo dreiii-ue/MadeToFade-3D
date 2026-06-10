@@ -22,7 +22,9 @@ $result = mysqli_query($conn,
 <body>
 
 <div class="navbar">
-    <h2>MADE TO FADE</h2>
+    <div class="logo-area">
+        <img src="images/logo.png" alt="Logo">
+    </div>
 
     <div>
         <a href="home.php">Shop</a>
