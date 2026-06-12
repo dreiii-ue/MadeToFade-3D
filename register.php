@@ -3,16 +3,26 @@ include "includes/config.php";
 
 if(isset($_POST['register'])){
 
-    $fullname = $_POST['fullname'];
-    $username = $_POST['username'];
+    $fullname = mysqli_real_escape_string($conn, $_POST['fullname']);
+    $username = mysqli_real_escape_string($conn, $_POST['username']);
     $password = $_POST['password'];
 
-    mysqli_query($conn,
-    "INSERT INTO users(fullname, username, password, role)
-     VALUES('$fullname', '$username', '$password', 'customer')");
+    $check = mysqli_query($conn,
+    "SELECT * FROM users WHERE username='$username'");
 
-    header("Location: login.php");
-    exit();
+    if(mysqli_num_rows($check) > 0){
+        $error = "Username already exists.";
+    }
+    else{
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+        mysqli_query($conn,
+        "INSERT INTO users(fullname, username, password, role)
+         VALUES('$fullname', '$username', '$hashed_password', 'customer')");
+
+        header("Location: login.php");
+        exit();
+    }
 }
 ?>
 
@@ -38,6 +48,10 @@ if(isset($_POST['register'])){
 <div class="form-container">
 
     <h1>Register</h1>
+
+    <?php if(isset($error)){ ?>
+        <p><?php echo $error; ?></p>
+    <?php } ?>
 
     <form method="POST">
 

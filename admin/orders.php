@@ -7,6 +7,32 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != "admin"){
     exit();
 }
 
+function deductStock($conn, $order_id){
+    $order_result = mysqli_query($conn,
+    "SELECT * FROM orders WHERE id='$order_id'");
+
+    $order = mysqli_fetch_assoc($order_result);
+
+    if($order['stock_deducted'] != "Yes"){
+
+        $order_items = mysqli_query($conn,
+        "SELECT * FROM order_items WHERE order_id='$order_id'");
+
+        while($item = mysqli_fetch_assoc($order_items)){
+            mysqli_query($conn,
+            "UPDATE products
+             SET stock = stock - {$item['quantity']}
+             WHERE id='{$item['product_id']}'
+             AND stock >= {$item['quantity']}");
+        }
+
+        mysqli_query($conn,
+        "UPDATE orders
+         SET stock_deducted='Yes'
+         WHERE id='$order_id'");
+    }
+}
+
 if(isset($_POST['assign'])){
     $order_id = $_POST['order_id'];
     $courier_id = $_POST['courier_id'];
@@ -21,31 +47,52 @@ if(isset($_POST['assign'])){
     exit();
 }
 
+if(isset($_POST['approve_payment'])){
+    $order_id = $_POST['order_id'];
+
+    deductStock($conn, $order_id);
+
+    mysqli_query($conn,
+    "UPDATE orders 
+     SET payment_status='Paid',
+         payment_reject_reason=''
+     WHERE id='$order_id'");
+
+    header("Location: orders.php");
+    exit();
+}
+
+if(isset($_POST['reject_payment'])){
+    $order_id = $_POST['order_id'];
+    $reason = mysqli_real_escape_string($conn, $_POST['reject_reason']);
+
+    mysqli_query($conn,
+    "UPDATE orders 
+     SET payment_status='Rejected',
+         payment_reject_reason='$reason'
+     WHERE id='$order_id'");
+
+    header("Location: orders.php");
+    exit();
+}
+
 if(isset($_POST['mark_paid'])){
     $order_id = $_POST['order_id'];
+
+    deductStock($conn, $order_id);
 
     mysqli_query($conn,
     "UPDATE orders 
      SET payment_status='Paid'
      WHERE id='$order_id'");
 
-    $order_items = mysqli_query($conn,
-    "SELECT * FROM order_items WHERE order_id='$order_id'");
-
-    while($item = mysqli_fetch_assoc($order_items)){
-        mysqli_query($conn,
-        "UPDATE products
-         SET stock = stock - {$item['quantity']}
-         WHERE id='{$item['product_id']}'");
-    }
-
     header("Location: orders.php");
     exit();
 }
 
-$search = isset($_GET['search']) ? $_GET['search'] : "";
-$payment = isset($_GET['payment']) ? $_GET['payment'] : "";
-$delivery = isset($_GET['delivery']) ? $_GET['delivery'] : "";
+$search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : "";
+$payment = isset($_GET['payment']) ? mysqli_real_escape_string($conn, $_GET['payment']) : "";
+$delivery = isset($_GET['delivery']) ? mysqli_real_escape_string($conn, $_GET['delivery']) : "";
 
 $sql = "SELECT orders.*, users.fullname
         FROM orders
@@ -67,12 +114,6 @@ if($delivery != ""){
 $sql .= " ORDER BY orders.id DESC";
 
 $orders = mysqli_query($conn, $sql);
-
-$orders = mysqli_query($conn,
-"SELECT orders.*, users.fullname
- FROM orders
- JOIN users ON orders.customer_id = users.id
- ORDER BY orders.id DESC");
 
 $couriers = mysqli_query($conn,
 "SELECT * FROM users WHERE role='courier'");
@@ -96,35 +137,36 @@ $couriers = mysqli_query($conn,
 
 <div class="main-content">
 
-    <div class="topbar">
+<div class="topbar">
 
-        <div class="topbar-left">
-            <i class="fa-solid fa-bars" onclick="toggleSidebar()"></i>
+    <div class="topbar-left">
+        <i class="fa-solid fa-bars" onclick="toggleSidebar()"></i>
+    </div>
+
+    <div class="topbar-right">
+
+        <div class="topbar-item">
+            <i class="fa-regular fa-calendar"></i>
+            <span><?php echo date("M d, Y"); ?></span>
         </div>
 
-        <div class="topbar-right">
+        <div class="divider"></div>
 
-            <div class="topbar-item">
-                <i class="fa-regular fa-calendar"></i>
-                <span><?php echo date("M d, Y"); ?></span>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="topbar-item">
-                <i class="fa-regular fa-clock"></i>
-                <span id="clock"></span>
-            </div>
-
+        <div class="topbar-item">
+            <i class="fa-regular fa-clock"></i>
+            <span id="clock"></span>
         </div>
 
     </div>
+
+</div>
 
 <h1>Manage Orders</h1>
 
 <a href="dashboard.php" class="btn">Back</a>
 
 <br><br>
+
 <div class="panel">
     <form method="GET" class="filter-wrapper">
 
@@ -135,7 +177,10 @@ $couriers = mysqli_query($conn,
 
         <select name="payment">
             <option value="">All Payment</option>
-            <option value="Pending" <?php if($payment=="Pending") echo "selected"; ?>>Pending</option>
+            <option value="Pending Verification" <?php if($payment=="Pending Verification") echo "selected"; ?>>Pending Verification</option>
+            <option value="Proof Submitted" <?php if($payment=="Proof Submitted") echo "selected"; ?>>Proof Submitted</option>
+            <option value="Rejected" <?php if($payment=="Rejected") echo "selected"; ?>>Rejected</option>
+            <option value="To Collect" <?php if($payment=="To Collect") echo "selected"; ?>>To Collect</option>
             <option value="Paid" <?php if($payment=="Paid") echo "selected"; ?>>Paid</option>
         </select>
 
@@ -154,6 +199,7 @@ $couriers = mysqli_query($conn,
 
     </form>
 </div>
+
 <br>
 
 <table>
@@ -161,14 +207,12 @@ $couriers = mysqli_query($conn,
     <th>Order ID</th>
     <th>Customer</th>
     <th>Total</th>
-    <th>Address</th>
-    <th>Contact</th>
-    <th>Payment Method</th>
-    <th>Payment Status</th>
+    <th>Payment</th>
+    <th>Proof</th>
     <th>Payment Action</th>
     <th>Order Status</th>
     <th>Delivery Status</th>
-    <th>Assign Courier</th>
+    <th>Courier</th>
     <th>Action</th>
 </tr>
 
@@ -180,33 +224,53 @@ $couriers = mysqli_query($conn,
 
     <td>₱<?php echo $row['total']; ?></td>
 
-    <td><?php echo $row['address']; ?></td>
-
-    <td><?php echo $row['contact_number']; ?></td>
-
-    <td><?php echo $row['payment_method']; ?></td>
-
     <td>
+        <strong><?php echo $row['payment_method']; ?></strong><br>
         <span class="status <?php echo $row['payment_status'] == 'Paid' ? 'completed' : 'pending'; ?>">
             <?php echo $row['payment_status']; ?>
         </span>
     </td>
 
     <td>
-        <?php if($row['payment_status'] != "Paid"){ ?>
-            <form method="POST">
-                <input type="hidden"
-                       name="order_id"
-                       value="<?php echo $row['id']; ?>">
-
-                <button type="submit"
-                        name="mark_paid"
-                        class="btn">
-                    Mark Paid
-                </button>
-            </form>
+        <?php if($row['payment_screenshot'] != ""){ ?>
+            <a href="../uploads/payments/<?php echo $row['payment_screenshot']; ?>" target="_blank">
+                <img src="../uploads/payments/<?php echo $row['payment_screenshot']; ?>" class="proof-img">
+            </a>
+            <br>
+            <small>Ref: <?php echo $row['payment_reference']; ?></small>
         <?php } else { ?>
+            No payment proof
+        <?php } ?>
+    </td>
+
+    <td>
+        <?php if($row['payment_status'] == "Proof Submitted"){ ?>
+
+            <form method="POST">
+                <input type="hidden" name="order_id" value="<?php echo $row['id']; ?>">
+                <button type="submit" name="approve_payment" class="btn">Approve</button>
+            </form>
+
+            <br>
+
+            <form method="POST">
+                <input type="hidden" name="order_id" value="<?php echo $row['id']; ?>">
+                <input type="text" name="reject_reason" placeholder="Reject reason" required>
+                <button type="submit" name="reject_payment" class="btn">Reject</button>
+            </form>
+
+        <?php } elseif($row['payment_status'] == "To Collect"){ ?>
+
+            COD
+
+        <?php } elseif($row['payment_status'] != "Paid"){ ?>
+
+            Waiting
+
+        <?php } else { ?>
+
             Paid
+
         <?php } ?>
     </td>
 
@@ -266,7 +330,8 @@ $couriers = mysqli_query($conn,
                 mysqli_data_seek($couriers, 0);
                 while($courier = mysqli_fetch_assoc($couriers)){
                 ?>
-                    <option value="<?php echo $courier['id']; ?>">
+                    <option value="<?php echo $courier['id']; ?>"
+                        <?php if($row['courier_id'] == $courier['id']) echo "selected"; ?>>
                         <?php echo $courier['fullname']; ?>
                     </option>
                 <?php } ?>

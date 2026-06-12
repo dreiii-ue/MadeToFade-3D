@@ -11,12 +11,23 @@ $customer_id = $_SESSION['user_id'];
 
 if(isset($_POST['checkout'])){
 
-    $address = $_POST['address'];
-    $contact_number = $_POST['contact_number'];
-    $payment_method = $_POST['payment_method'];
+    $address = mysqli_real_escape_string($conn, $_POST['address']);
+    $contact_number = mysqli_real_escape_string($conn, $_POST['contact_number']);
+    $payment_method = mysqli_real_escape_string($conn, $_POST['payment_method']);
+
+    if(!preg_match("/^09[0-9]{2} [0-9]{3} [0-9]{4}$/", $contact_number)){
+        die("Invalid phone number format. Use 0912 123 1234.");
+    }
+
+    if($payment_method == "Cash on Delivery"){
+        $payment_status = "To Collect";
+    }
+    else{
+        $payment_status = "Pending Verification";
+    }
 
     $cart = mysqli_query($conn,
-    "SELECT cart.*, products.price
+    "SELECT cart.*, products.name, products.price, products.stock
      FROM cart
      JOIN products ON cart.product_id = products.id
      WHERE cart.customer_id='$customer_id'");
@@ -27,9 +38,18 @@ if(isset($_POST['checkout'])){
     }
 
     $total = 0;
+    $stock_error = "";
 
     while($item = mysqli_fetch_assoc($cart)){
+        if($item['quantity'] > $item['stock']){
+            $stock_error = $item['name'] . " does not have enough stock.";
+        }
+
         $total += $item['price'] * $item['quantity'];
+    }
+
+    if($stock_error != ""){
+        die($stock_error);
     }
 
     mysqli_query($conn,
@@ -43,7 +63,10 @@ if(isset($_POST['checkout'])){
         payment_method,
         payment_status,
         stock_deducted,
-        proof_image
+        proof_image,
+        payment_screenshot,
+        payment_reference,
+        payment_reject_reason
      )
      VALUES(
         '$customer_id',
@@ -53,8 +76,11 @@ if(isset($_POST['checkout'])){
         '$address',
         '$contact_number',
         '$payment_method',
-        'Pending',
+        '$payment_status',
         'No',
+        '',
+        '',
+        '',
         ''
      )");
 
@@ -72,7 +98,7 @@ if(isset($_POST['checkout'])){
     mysqli_query($conn,
     "DELETE FROM cart WHERE customer_id='$customer_id'");
 
-    header("Location: orders.php");
+    header("Location: order_details.php?id=$order_id");
     exit();
 }
 

@@ -2,10 +2,15 @@
 session_start();
 include "includes/config.php";
 
-$id = $_GET['id'];
+$id = (int)$_GET['id'];
 
 $result = mysqli_query($conn, "SELECT * FROM products WHERE id='$id'");
 $product = mysqli_fetch_assoc($result);
+
+if(!$product){
+    header("Location: index.php");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -62,26 +67,36 @@ $product = mysqli_fetch_assoc($result);
         <p><strong>Size:</strong> <?php echo $product['size']; ?></p>
         <p><strong>Available Stock:</strong> <?php echo $product['stock']; ?></p>
 
-        <form method="POST" action="customer/cart.php">
+        <?php if(isset($_SESSION['role']) && $_SESSION['role'] == "customer"){ ?>
 
-            <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+            <form method="POST" action="customer/cart.php">
 
-            <label>Quantity</label><br>
+                <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
 
-            <input type="number"
-                   name="quantity"
-                   value="1"
-                   min="1"
-                   max="<?php echo $product['stock']; ?>"
-                   required>
+                <label>Quantity</label><br>
 
-            <br>
+                <input type="number"
+                       name="quantity"
+                       value="1"
+                       min="1"
+                       max="<?php echo $product['stock']; ?>"
+                       required>
 
-            <button type="submit" name="add_cart" class="btn">
-                Add to Cart
-            </button>
+                <br>
 
-        </form>
+                <button type="submit" name="add_cart" class="btn">
+                    Add to Cart
+                </button>
+
+            </form>
+
+        <?php } else { ?>
+
+            <a href="login.php" class="btn">
+                Login to Purchase
+            </a>
+
+        <?php } ?>
     </div>
 
 </div>

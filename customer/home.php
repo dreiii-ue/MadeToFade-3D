@@ -9,36 +9,76 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != "customer"){
 
 $user_id = $_SESSION['user_id'];
 
+$user_result = mysqli_query($conn, "SELECT * FROM users WHERE id='$user_id'");
+$user = mysqli_fetch_assoc($user_result);
+
 if(isset($_POST['update_profile'])){
 
-    $fullname = $_POST['fullname'];
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+    $fullname = mysqli_real_escape_string($conn, $_POST['fullname']);
+    $username = mysqli_real_escape_string($conn, $_POST['username']);
 
-    if($password == ""){
-        mysqli_query($conn,
-        "UPDATE users SET
-            fullname='$fullname',
-            username='$username'
-         WHERE id='$user_id'");
+    $check_username = mysqli_query($conn,
+    "SELECT * FROM users 
+     WHERE username='$username'
+     AND id!='$user_id'");
+
+    if(mysqli_num_rows($check_username) > 0){
+        $error = "Username already exists.";
     }
     else{
         mysqli_query($conn,
         "UPDATE users SET
             fullname='$fullname',
-            username='$username',
-            password='$password'
+            username='$username'
          WHERE id='$user_id'");
+
+        $_SESSION['fullname'] = $fullname;
+
+        if(
+            $_POST['old_password'] != "" ||
+            $_POST['new_password'] != "" ||
+            $_POST['confirm_password'] != ""
+        ){
+            $old_password = $_POST['old_password'];
+            $new_password = $_POST['new_password'];
+            $confirm_password = $_POST['confirm_password'];
+
+            if($old_password == "" || $new_password == "" || $confirm_password == ""){
+                $error = "Complete all password fields.";
+            }
+            else{
+                $valid_old_password = password_verify($old_password, $user['password']);
+
+                if(!$valid_old_password && $old_password == $user['password']){
+                    $valid_old_password = true;
+                }
+
+                if(!$valid_old_password){
+                    $error = "Current password is incorrect.";
+                }
+                elseif($new_password != $confirm_password){
+                    $error = "New passwords do not match.";
+                }
+                else{
+                    $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+
+                    mysqli_query($conn,
+                    "UPDATE users
+                     SET password='$hashed_password'
+                     WHERE id='$user_id'");
+
+                    $success = "Profile and password updated successfully.";
+                }
+            }
+        }
+        else{
+            $success = "Profile updated successfully.";
+        }
     }
 
-    $_SESSION['fullname'] = $fullname;
-
-    header("Location: home.php");
-    exit();
+    $user_result = mysqli_query($conn, "SELECT * FROM users WHERE id='$user_id'");
+    $user = mysqli_fetch_assoc($user_result);
 }
-
-$user_result = mysqli_query($conn, "SELECT * FROM users WHERE id='$user_id'");
-$user = mysqli_fetch_assoc($user_result);
 
 $order_count = mysqli_fetch_assoc(mysqli_query($conn,
 "SELECT COUNT(*) AS total FROM orders WHERE customer_id='$user_id'"));
@@ -74,6 +114,14 @@ $cart_count = mysqli_fetch_assoc(mysqli_query($conn,
 <h1>Customer Dashboard</h1>
 <p>Welcome, <?php echo $_SESSION['fullname']; ?></p>
 
+<?php if(isset($success)){ ?>
+    <p class="success-msg"><?php echo $success; ?></p>
+<?php } ?>
+
+<?php if(isset($error)){ ?>
+    <p class="error-msg"><?php echo $error; ?></p>
+<?php } ?>
+
 <div class="dashboard-cards">
 
     <div class="dashboard-card">
@@ -105,8 +153,16 @@ $cart_count = mysqli_fetch_assoc(mysqli_query($conn,
     <label>Username</label>
     <input type="text" name="username" value="<?php echo $user['username']; ?>" required>
 
+    <h3>Change Password</h3>
+
+    <label>Current Password</label>
+    <input type="password" name="old_password" placeholder="Enter current password">
+
     <label>New Password</label>
-    <input type="password" name="password" placeholder="Leave blank if no change">
+    <input type="password" name="new_password" placeholder="Enter new password">
+
+    <label>Confirm New Password</label>
+    <input type="password" name="confirm_password" placeholder="Confirm new password">
 
     <button type="submit" name="update_profile" class="btn">Save Changes</button>
 

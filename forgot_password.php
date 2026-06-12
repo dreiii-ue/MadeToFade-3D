@@ -3,23 +3,31 @@ include "includes/config.php";
 
 if(isset($_POST['reset'])){
 
-    $username = $_POST['username'];
+    $username = mysqli_real_escape_string($conn, $_POST['username']);
     $new_password = $_POST['new_password'];
+    $confirm_password = $_POST['confirm_password'];
 
-    $check = mysqli_query($conn,
-    "SELECT * FROM users WHERE username='$username'");
-
-    if(mysqli_num_rows($check) > 0){
-
-        mysqli_query($conn,
-        "UPDATE users 
-         SET password='$new_password'
-         WHERE username='$username'");
-
-        $success = "Password updated. You can now login.";
+    if($new_password != $confirm_password){
+        $error = "Passwords do not match.";
     }
     else{
-        $error = "Username not found.";
+        $check = mysqli_query($conn,
+        "SELECT * FROM users WHERE username='$username'");
+
+        if(mysqli_num_rows($check) > 0){
+
+            $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+
+            mysqli_query($conn,
+            "UPDATE users 
+             SET password='$hashed_password'
+             WHERE username='$username'");
+
+            $success = "Password updated. You can now login.";
+        }
+        else{
+            $error = "Username not found.";
+        }
     }
 }
 ?>
@@ -30,7 +38,7 @@ if(isset($_POST['reset'])){
     <title>Forgot Password</title>
     <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
-<body>
+<body class="bg-image">
 
 <div class="navbar">
     <div class="logo-area">
@@ -60,6 +68,8 @@ if(isset($_POST['reset'])){
     <input type="text" name="username" placeholder="Enter Username" required>
 
     <input type="password" name="new_password" placeholder="New Password" required>
+
+    <input type="password" name="confirm_password" placeholder="Confirm Password" required>
 
     <button type="submit" name="reset">Reset Password</button>
 

@@ -9,21 +9,36 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != "admin"){
 
 $edit = false;
 
+function uploadImage($input_name){
+    $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+
+    $file_name = $_FILES[$input_name]['name'];
+    $tmp = $_FILES[$input_name]['tmp_name'];
+    $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
+    if(!in_array($ext, $allowed)){
+        die("Invalid image type.");
+    }
+
+    $new_name = time() . "_" . rand(1000,9999) . "." . $ext;
+
+    move_uploaded_file($tmp, "../images/" . $new_name);
+
+    return $new_name;
+}
+
 if(isset($_POST['add'])){
 
-    $name = $_POST['name'];
+    $name = mysqli_real_escape_string($conn, $_POST['name']);
     $price = $_POST['price'];
     $stock = $_POST['stock'];
-    $category = $_POST['category'];
-    $color = $_POST['color'];
-    $size = $_POST['size'];
+    $category = mysqli_real_escape_string($conn, $_POST['category']);
+    $color = mysqli_real_escape_string($conn, $_POST['color']);
+    $size = mysqli_real_escape_string($conn, $_POST['size']);
 
     $sku = "MTF-" . strtoupper(str_replace(" ", "", $category)) . "-" . strtoupper($color) . "-" . strtoupper($size) . "-" . rand(1000,9999);
 
-    $image = $_FILES['image']['name'];
-    $tmp = $_FILES['image']['tmp_name'];
-
-    move_uploaded_file($tmp, "../images/" . $image);
+    $image = uploadImage("image");
 
     mysqli_query($conn,
     "INSERT INTO products(name, price, stock, image, category, sku, color, size)
@@ -36,21 +51,17 @@ if(isset($_POST['add'])){
 if(isset($_POST['update'])){
 
     $id = $_POST['id'];
-    $name = $_POST['name'];
+    $name = mysqli_real_escape_string($conn, $_POST['name']);
     $price = $_POST['price'];
     $stock = $_POST['stock'];
-    $category = $_POST['category'];
-    $color = $_POST['color'];
-    $size = $_POST['size'];
+    $category = mysqli_real_escape_string($conn, $_POST['category']);
+    $color = mysqli_real_escape_string($conn, $_POST['color']);
+    $size = mysqli_real_escape_string($conn, $_POST['size']);
 
     $sku = "MTF-" . strtoupper(str_replace(" ", "", $category)) . "-" . strtoupper($color) . "-" . strtoupper($size) . "-" . rand(1000,9999);
 
     if($_FILES['image']['name'] != ""){
-
-        $image = $_FILES['image']['name'];
-        $tmp = $_FILES['image']['tmp_name'];
-
-        move_uploaded_file($tmp, "../images/" . $image);
+        $image = uploadImage("image");
 
         mysqli_query($conn,
         "UPDATE products SET
@@ -100,9 +111,9 @@ if(isset($_GET['edit'])){
     $product = mysqli_fetch_assoc($edit_result);
 }
 
-$search = isset($_GET['search']) ? $_GET['search'] : "";
-$category_filter = isset($_GET['category']) ? $_GET['category'] : "";
-$stock_filter = isset($_GET['stock_filter']) ? $_GET['stock_filter'] : "";
+$search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : "";
+$category_filter = isset($_GET['category']) ? mysqli_real_escape_string($conn, $_GET['category']) : "";
+$stock_filter = isset($_GET['stock_filter']) ? mysqli_real_escape_string($conn, $_GET['stock_filter']) : "";
 
 $sql = "SELECT * FROM products WHERE 1=1";
 
@@ -148,6 +159,9 @@ $result = mysqli_query($conn, $sql);
 <h1>Inventory Management</h1>
 
 <div class="panel">
+
+    <h2><?php echo $edit ? "Edit Product" : "Add Product"; ?></h2>
+
     <form method="POST" enctype="multipart/form-data" class="product-form">
 
         <input type="hidden" name="id" value="<?php echo $edit ? $product['id'] : ''; ?>">
@@ -191,9 +205,10 @@ $result = mysqli_query($conn, $sql);
     </form>
 </div>
 
-<br>
-
 <div class="panel">
+
+    <h2>Filter Products</h2>
+
     <form method="GET" class="filter-wrapper">
 
         <input type="text"
@@ -222,9 +237,6 @@ $result = mysqli_query($conn, $sql);
 
     </form>
 </div>
-
-<br>
-
 
 <table>
 <tr>

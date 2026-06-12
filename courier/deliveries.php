@@ -7,6 +7,46 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != "courier"){
     exit();
 }
 
+function deductStock($conn, $order_id){
+    $order_result = mysqli_query($conn,
+    "SELECT * FROM orders WHERE id='$order_id'");
+
+    $order = mysqli_fetch_assoc($order_result);
+
+    if($order['stock_deducted'] != "Yes"){
+
+        $order_items = mysqli_query($conn,
+        "SELECT * FROM order_items WHERE order_id='$order_id'");
+
+        while($item = mysqli_fetch_assoc($order_items)){
+            mysqli_query($conn,
+            "UPDATE products
+             SET stock = stock - {$item['quantity']}
+             WHERE id='{$item['product_id']}'
+             AND stock >= {$item['quantity']}");
+        }
+
+        mysqli_query($conn,
+        "UPDATE orders
+         SET stock_deducted='Yes'
+         WHERE id='$order_id'");
+    }
+}
+
+if(isset($_POST['collect_payment'])){
+    $order_id = $_POST['order_id'];
+
+    deductStock($conn, $order_id);
+
+    mysqli_query($conn,
+    "UPDATE orders
+     SET payment_status='Paid'
+     WHERE id='$order_id'");
+
+    header("Location: deliveries.php");
+    exit();
+}
+
 if(isset($_POST['update'])){
 
     $order_id = $_POST['order_id'];
@@ -20,10 +60,16 @@ if(isset($_POST['update'])){
             mkdir($folder, 0777, true);
         }
 
+        $allowed = ['jpg', 'jpeg', 'png', 'webp'];
         $file_name = $_FILES['proof_image']['name'];
         $tmp = $_FILES['proof_image']['tmp_name'];
+        $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
 
-        $proof_image = "proof_" . $order_id . "_" . $file_name;
+        if(!in_array($ext, $allowed)){
+            die("Invalid image type.");
+        }
+
+        $proof_image = "delivery_" . $order_id . "_" . time() . "." . $ext;
 
         move_uploaded_file($tmp, $folder . $proof_image);
 
@@ -91,7 +137,7 @@ $result = mysqli_query($conn, $sql);
     }
     </script>
 </head>
-<body>
+<body class="bg-image">
 
 <div class="navbar">
     <h2>MADE TO FADE COURIER</h2>
@@ -104,9 +150,12 @@ $result = mysqli_query($conn, $sql);
 
 <div class="admin-container">
 
+<div class="panel">
 <h1>My Deliveries</h1>
 <p>Welcome, <?php echo $_SESSION['fullname']; ?></p>
+</div>
 
+<div class="panel">
 <form method="GET" class="filter-wrapper">
 
     <input type="text" name="search" placeholder="Search ID or Customer"
@@ -127,20 +176,18 @@ $result = mysqli_query($conn, $sql);
     <?php } ?>
 
 </form>
-
-<br>
+</div>
 
 <table>
 <tr>
     <th>Order ID</th>
     <th>Customer</th>
     <th>Total</th>
-    <th>Payment Method</th>
-    <th>Payment Status</th>
+    <th>Payment</th>
     <th>Address</th>
     <th>Contact</th>
     <th>Delivery Status</th>
-    <th>Proof</th>
+    <th>Delivery Proof</th>
     <th>Update</th>
 </tr>
 
@@ -151,12 +198,23 @@ $result = mysqli_query($conn, $sql);
     <td>#<?php echo $row['id']; ?></td>
     <td><?php echo $row['fullname']; ?></td>
     <td>₱<?php echo $row['total']; ?></td>
-    <td><?php echo $row['payment_method']; ?></td>
 
     <td>
+        <strong><?php echo $row['payment_method']; ?></strong><br>
+
         <span class="status <?php echo $row['payment_status'] == 'Paid' ? 'completed' : 'pending'; ?>">
             <?php echo $row['payment_status']; ?>
         </span>
+
+        <?php if($row['payment_method'] == "Cash on Delivery" && $row['payment_status'] == "To Collect"){ ?>
+            <br><br>
+            <form method="POST">
+                <input type="hidden" name="order_id" value="<?php echo $row['id']; ?>">
+                <button type="submit" name="collect_payment" class="btn">
+                    Mark Collected
+                </button>
+            </form>
+        <?php } ?>
     </td>
 
     <td><?php echo $row['address']; ?></td>
@@ -219,7 +277,7 @@ $result = mysqli_query($conn, $sql);
 
 <?php } else { ?>
 <tr>
-    <td colspan="10" style="text-align:center;">No deliveries found.</td>
+    <td colspan="9" style="text-align:center;">No deliveries found.</td>
 </tr>
 <?php } ?>
 

@@ -116,6 +116,7 @@ $total = 0;
 
 </table>
 
+<br>
 <h2>Total: ₱<?php echo $total; ?></h2>
 
 <?php if($total > 0){ ?>
