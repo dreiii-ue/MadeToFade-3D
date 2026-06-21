@@ -58,6 +58,8 @@ $recent_sales = mysqli_query($conn,
 
 <div class="main-content">
 
+<?php include "topbar.php"; ?>
+
 <h1>Reports</h1>
 <p>Sales, orders, and inventory summary</p>
 
@@ -176,6 +178,39 @@ $recent_sales = mysqli_query($conn,
 </div>
 
 </div>
+
+<script>
+function updateClock() {
+    const clock = document.getElementById("clock");
+
+    if (!clock) {
+        return;
+    }
+
+    const now = new Date();
+
+    clock.innerHTML = now.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function toggleSidebar() {
+    const sidebar = document.querySelector(".sidebar");
+    const mainContent = document.querySelector(".main-content");
+
+    if (sidebar) {
+        sidebar.classList.toggle("hide-sidebar");
+    }
+
+    if (mainContent) {
+        mainContent.classList.toggle("full-width");
+    }
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+</script>
 
 </body>
 </html>

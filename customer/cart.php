@@ -10,26 +10,49 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != "customer"){
 $customer_id = $_SESSION['user_id'];
 
 if(isset($_POST['add_cart'])){
+    $product_id = (int)$_POST['product_id'];
+    $quantity = (int)$_POST['quantity'];
+    if($quantity < 1) $quantity = 1;
 
-    $product_id = $_POST['product_id'];
-    $quantity = $_POST['quantity'];
+    $stock_result = mysqli_query($conn, "SELECT stock FROM products WHERE id='$product_id'");
+    $stock_row = mysqli_fetch_assoc($stock_result);
+    $stock = $stock_row ? (int)$stock_row['stock'] : 0;
 
-    $check = mysqli_query($conn,
-    "SELECT * FROM cart
-     WHERE customer_id='$customer_id'
-     AND product_id='$product_id'");
+    $check = mysqli_query($conn, "SELECT * FROM cart WHERE customer_id='$customer_id' AND product_id='$product_id'");
 
     if(mysqli_num_rows($check) > 0){
-        mysqli_query($conn,
-        "UPDATE cart
-         SET quantity = quantity + $quantity
-         WHERE customer_id='$customer_id'
-         AND product_id='$product_id'");
+        $cart_row = mysqli_fetch_assoc($check);
+        $new_qty = $cart_row['quantity'] + $quantity;
+        if($new_qty > $stock) $new_qty = $stock;
+        mysqli_query($conn, "UPDATE cart SET quantity='$new_qty' WHERE customer_id='$customer_id' AND product_id='$product_id'");
     }
     else{
-        mysqli_query($conn,
-        "INSERT INTO cart(customer_id, product_id, quantity)
-         VALUES('$customer_id', '$product_id', '$quantity')");
+        if($quantity > $stock) $quantity = $stock;
+        mysqli_query($conn, "INSERT INTO cart(customer_id, product_id, quantity) VALUES('$customer_id', '$product_id', '$quantity')");
+    }
+
+    header("Location: cart.php");
+    exit();
+}
+
+if(isset($_POST['update_qty'])){
+    $cart_id = (int)$_POST['cart_id'];
+    $action = $_POST['action'];
+
+    $cart_item = mysqli_query($conn, "SELECT cart.*, products.stock FROM cart JOIN products ON cart.product_id=products.id WHERE cart.id='$cart_id' AND cart.customer_id='$customer_id'");
+    $item = mysqli_fetch_assoc($cart_item);
+
+    if($item){
+        $qty = (int)$item['quantity'];
+        if($action == "add" && $qty < (int)$item['stock']) $qty++;
+        if($action == "subtract") $qty--;
+
+        if($qty <= 0){
+            mysqli_query($conn, "DELETE FROM cart WHERE id='$cart_id' AND customer_id='$customer_id'");
+        }
+        else{
+            mysqli_query($conn, "UPDATE cart SET quantity='$qty' WHERE id='$cart_id' AND customer_id='$customer_id'");
+        }
     }
 
     header("Location: cart.php");
@@ -37,115 +60,169 @@ if(isset($_POST['add_cart'])){
 }
 
 if(isset($_GET['remove'])){
-
-    $id = $_GET['remove'];
-
-    mysqli_query($conn,
-    "DELETE FROM cart
-     WHERE id='$id'
-     AND customer_id='$customer_id'");
-
+    $id = (int)$_GET['remove'];
+    mysqli_query($conn, "DELETE FROM cart WHERE id='$id' AND customer_id='$customer_id'");
     header("Location: cart.php");
     exit();
 }
 
 $result = mysqli_query($conn,
-"SELECT cart.*, products.name, products.price, products.image
+"SELECT cart.*, products.name, products.price, products.image, products.stock
  FROM cart
  JOIN products ON cart.product_id = products.id
  WHERE cart.customer_id='$customer_id'");
 
+$addresses = mysqli_query($conn, "SELECT * FROM user_addresses WHERE user_id='$customer_id' ORDER BY is_default DESC, id DESC");
 $total = 0;
 ?>
-
 <!DOCTYPE html>
 <html>
-<head>
-    <title>My Cart</title>
-    <link rel="stylesheet" type="text/css" href="../css/style.css">
-</head>
-<body>
+    <head>
+        <title>My Cart</title>
+        <link rel="stylesheet" type="text/css" href="../css/style.css">
+    </head>
+    <body>
+        <div class="navbar">
+            <div class="logo-area">
+                <img src="../images/logo.png" alt="Logo">
+            </div>
+            <div>
+                <a href="../index.php">Shop</a>
+                <a href="home.php">Dashboard</a>
+                <a href="cart.php">Cart</a>
+                <a href="orders.php">My Orders</a>
+                <a href="../logout.php">Logout</a>
+            </div>
+        </div>
+        <div class="admin-container">
+            <h1>My Cart</h1>
+            <table>
+                <tr>
+                    <th>Image</th>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Subtotal</th>
+                    <th>Action</th>
+                </tr>
+                <?php while($row = mysqli_fetch_assoc($result)){ $subtotal = $row['price'] * $row['quantity']; $total += $subtotal; ?>
+                <tr>
+                    <td>
+                        <img src="../images/<?php echo $row['image']; ?>">
+                    </td>
+                    <td><?php echo $row['name']; ?><br>
+                        <small>Stock: <?php echo $row['stock']; ?></small>
+                    </td>
+                    <td>₱<?php echo $row['price']; ?></td>
+                    <td>
+                        <form method="POST" class="qty-control">
+                            <input type="hidden" name="cart_id" value="<?php echo $row['id']; ?>">
+                            <button type="submit" name="action" value="subtract" class="small-btn">-</button>
+                            <input type="text" value="<?php echo $row['quantity']; ?>" readonly>
+                            <button type="submit" name="action" value="add" class="small-btn">+</button>
+                            <input type="hidden" name="update_qty" value="1">
+                        </form>
+                    </td>
+                    <td>₱<?php echo $subtotal; ?></td>
+                    <td>
+                        <a href="cart.php?remove=<?php echo $row['id']; ?>" class="btn" onclick="return confirm('Remove this item?')">Remove</a>
+                    </td>
+                </tr>
+                <?php } ?>
+            </table>
+            <br>
+            <h2>Total: ₱<?php echo $total; ?></h2>
+            <?php if ($total > 0) { ?>
+                <div class="panel">
+                    <h2>Checkout Details</h2>
+                    <p class="muted-text">
+                        Select one of your saved delivery addresses. If you do not have one yet, complete the new address form below.
+                    </p>
 
-<div class="navbar">
-    <div class="logo-area">
-        <img src="../images/logo.png" alt="Logo">
-    </div>
+                    <form method="POST" action="checkout.php" class="checkout-form checkout-details-form">
+                        <?php if (mysqli_num_rows($addresses) > 0) { ?>
+                            <div class="form-full">
+                                <label>Saved Delivery Address</label>
+                                <select name="saved_address_id" required>
+                                    <option value="">Select saved address</option>
+                                    <?php while ($a = mysqli_fetch_assoc($addresses)) { ?>
+                                        <option value="<?php echo $a['id']; ?>">
+                                            <?php echo htmlspecialchars($a['full_name'] ?? ''); ?> -
+                                            <?php echo htmlspecialchars($a['contact_number']); ?> -
+                                            <?php echo htmlspecialchars(substr($a['address'], 0, 80)); ?>
+                                        </option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+                        <?php } else { ?>
+                            <div class="form-full">
+                                <h3>New Delivery Address</h3>
+                            </div>
 
-    <div>
-        <a href="../index.php">Shop</a>
-        <a href="home.php">Dashboard</a>
-        <a href="cart.php">Cart</a>
-        <a href="orders.php">My Orders</a>
-        <a href="../logout.php">Logout</a>
-    </div>
-</div>
+                            <div>
+                                <label>Full Name</label>
+                                <input type="text" name="full_name" placeholder="Receiver full name" required>
+                            </div>
 
-<div class="admin-container">
+                            <div>
+                                <label>Phone Number</label>
+                                <input
+                                    type="text"
+                                    name="contact_number"
+                                    placeholder="0912 123 1234"
+                                    pattern="09[0-9]{2} [0-9]{3} [0-9]{4}"
+                                    required
+                                >
+                            </div>
 
-<h1>My Cart</h1>
+                            <div class="form-full">
+                                <label>Address Line 1</label>
+                                <input type="text" name="address_line1" placeholder="House no., street, barangay" required>
+                            </div>
 
-<table>
-<tr>
-    <th>Image</th>
-    <th>Product</th>
-    <th>Price</th>
-    <th>Qty</th>
-    <th>Subtotal</th>
-    <th>Action</th>
-</tr>
+                            <div class="form-full">
+                                <label>Address Line 2 <span class="optional-text">Optional</span></label>
+                                <input type="text" name="address_line2" placeholder="Apartment, floor, landmark, etc.">
+                            </div>
 
-<?php while($row = mysqli_fetch_assoc($result)){ 
-    $subtotal = $row['price'] * $row['quantity'];
-    $total += $subtotal;
-?>
-<tr>
-    <td><img src="../images/<?php echo $row['image']; ?>"></td>
-    <td><?php echo $row['name']; ?></td>
-    <td>₱<?php echo $row['price']; ?></td>
-    <td><?php echo $row['quantity']; ?></td>
-    <td>₱<?php echo $subtotal; ?></td>
-    <td>
-        <a href="cart.php?remove=<?php echo $row['id']; ?>"
-           class="btn"
-           onclick="return confirm('Remove this item?')">
-           Remove
-        </a>
-    </td>
-</tr>
-<?php } ?>
+                            <div>
+                                <label>City</label>
+                                <input type="text" name="city" placeholder="City" required>
+                            </div>
 
-</table>
+                            <div>
+                                <label>Province / Region</label>
+                                <input type="text" name="province_region" placeholder="Province or Region" required>
+                            </div>
 
-<br>
-<h2>Total: ₱<?php echo $total; ?></h2>
+                            <div>
+                                <label>Postal Code</label>
+                                <input type="text" name="postal_code" placeholder="Postal Code" required>
+                            </div>
 
-<?php if($total > 0){ ?>
+                            <div>
+                                <label>Country</label>
+                                <input type="text" name="country" value="Philippines" required>
+                            </div>
+                        <?php } ?>
 
-<form method="POST" action="checkout.php" class="checkout-form">
+                        <div>
+                            <label>Payment Method</label>
+                            <select name="payment_method" required>
+                                <option value="">Select payment method</option>
+                                <option value="Cash on Delivery">Cash on Delivery</option>
+                                <option value="GCash">GCash</option>
+                                <option value="Maya">Maya</option>
+                                <option value="Bank Transfer">Bank Transfer</option>
+                            </select>
+                        </div>
 
-    <input type="text" name="address" placeholder="Delivery Address" required>
-
-    <input type="text"
-           name="contact_number"
-           placeholder="0912 123 1234"
-           pattern="09[0-9]{2} [0-9]{3} [0-9]{4}"
-           required>
-
-    <select name="payment_method" required>
-        <option value="">Payment Method</option>
-        <option value="Cash on Delivery">Cash on Delivery</option>
-        <option value="GCash">GCash</option>
-        <option value="Maya">Maya</option>
-        <option value="Bank Transfer">Bank Transfer</option>
-    </select>
-
-    <button type="submit" name="checkout" class="btn">Checkout</button>
-
-</form>
-
-<?php } ?>
-
-</div>
-
-</body>
+                        <div class="checkout-button-box">
+                            <button type="submit" name="checkout" class="btn">Checkout</button>
+                        </div>
+                    </form>
+                </div>
+            <?php } ?>
+        </div>
+    </body>
 </html>

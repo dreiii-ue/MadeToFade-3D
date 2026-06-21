@@ -156,6 +156,8 @@ $result = mysqli_query($conn, $sql);
 
 <div class="main-content">
 
+<?php include "topbar.php"; ?>
+
 <h1>Inventory Management</h1>
 
 <div class="panel">
@@ -279,6 +281,39 @@ $result = mysqli_query($conn, $sql);
 
 </div>
 </div>
+
+<script>
+function updateClock() {
+    const clock = document.getElementById("clock");
+
+    if (!clock) {
+        return;
+    }
+
+    const now = new Date();
+
+    clock.innerHTML = now.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function toggleSidebar() {
+    const sidebar = document.querySelector(".sidebar");
+    const mainContent = document.querySelector(".main-content");
+
+    if (sidebar) {
+        sidebar.classList.toggle("hide-sidebar");
+    }
+
+    if (mainContent) {
+        mainContent.classList.toggle("full-width");
+    }
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+</script>
 
 </body>
 </html>

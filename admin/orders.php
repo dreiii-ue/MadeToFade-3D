@@ -168,15 +168,20 @@ $couriers = mysqli_query($conn,
 <br><br>
 
 <div class="panel">
+    <h2>Filter Orders</h2>
+    <p class="muted-text">
+        Search by order ID or customer name. Use the payment and delivery filters to quickly find orders that need action.
+    </p>
+
     <form method="GET" class="filter-wrapper">
 
         <input type="text"
             name="search"
-            placeholder="Search order ID or customer"
+            placeholder="Search order ID or customer name"
             value="<?php echo $search; ?>">
 
         <select name="payment">
-            <option value="">All Payment</option>
+            <option value="">All Payment Status</option>
             <option value="Pending Verification" <?php if($payment=="Pending Verification") echo "selected"; ?>>Pending Verification</option>
             <option value="Proof Submitted" <?php if($payment=="Proof Submitted") echo "selected"; ?>>Proof Submitted</option>
             <option value="Rejected" <?php if($payment=="Rejected") echo "selected"; ?>>Rejected</option>
@@ -185,7 +190,7 @@ $couriers = mysqli_query($conn,
         </select>
 
         <select name="delivery">
-            <option value="">All Delivery</option>
+            <option value="">All Delivery Status</option>
             <option value="Preparing" <?php if($delivery=="Preparing") echo "selected"; ?>>Preparing</option>
             <option value="Ready for Pickup" <?php if($delivery=="Ready for Pickup") echo "selected"; ?>>Ready for Pickup</option>
             <option value="Picked Up" <?php if($delivery=="Picked Up") echo "selected"; ?>>Picked Up</option>

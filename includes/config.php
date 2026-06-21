@@ -1,6 +1,6 @@
 <?php
 
-$conn = mysqli_connect("db.fr-pari1.bengt.wasmernet.com", "user_d4399a30", "pw_11751dfd", "db_10580911", 10272);
+$conn = mysqli_connect("localhost", "root", "", "made_to_fade", 3306);
 
 if(!$conn){
     die("Database connection failed");
