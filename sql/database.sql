@@ -1,227 +1,141 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Generation Time: Jun 11, 2026 at 03:24 AM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- Made To Fade Complete Clean SQL
+-- Safe for Wasmer/Adminer and phpMyAdmin
+-- This script drops and recreates the project tables.
 
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
+SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS `reorder_requests`;
+DROP TABLE IF EXISTS `user_addresses`;
+DROP TABLE IF EXISTS `order_items`;
+DROP TABLE IF EXISTS `orders`;
+DROP TABLE IF EXISTS `cart`;
+DROP TABLE IF EXISTS `products`;
+DROP TABLE IF EXISTS `users`;
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+SET FOREIGN_KEY_CHECKS = 1;
 
+CREATE TABLE `users` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `fullname` VARCHAR(100) DEFAULT NULL,
+    `username` VARCHAR(50) DEFAULT NULL,
+    `password` VARCHAR(255) DEFAULT NULL,
+    `role` VARCHAR(20) DEFAULT NULL,
+    `account_status` VARCHAR(20) NOT NULL DEFAULT 'Active',
+    `last_login` DATETIME DEFAULT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-DROP DATABASE IF EXISTS made_to_fade;
-
-CREATE DATABASE made_to_fade;
-
-USE made_to_fade;
-
-
---
--- Database: `made_to_fade`
---
-
--- --------------------------------------------------------
-
---
--- Table structure for table `cart`
---
+CREATE TABLE `products` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(100) DEFAULT NULL,
+    `price` DECIMAL(10,2) DEFAULT NULL,
+    `stock` INT(11) DEFAULT NULL,
+    `image` VARCHAR(255) DEFAULT NULL,
+    `category` VARCHAR(50) DEFAULT NULL,
+    `sku` VARCHAR(100) DEFAULT NULL,
+    `color` VARCHAR(50) DEFAULT NULL,
+    `size` VARCHAR(50) DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `cart` (
-  `id` int(11) NOT NULL,
-  `customer_id` int(11) DEFAULT NULL,
-  `product_id` int(11) DEFAULT NULL,
-  `quantity` int(11) DEFAULT 1
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `orders`
---
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `customer_id` INT(11) DEFAULT NULL,
+    `product_id` INT(11) DEFAULT NULL,
+    `quantity` INT(11) DEFAULT 1,
+    PRIMARY KEY (`id`),
+    KEY `customer_id` (`customer_id`),
+    KEY `product_id` (`product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `orders` (
-  `id` int(11) NOT NULL,
-  `customer_id` int(11) DEFAULT NULL,
-  `courier_id` int(11) DEFAULT NULL,
-  `total` decimal(10,2) DEFAULT NULL,
-  `order_status` varchar(50) DEFAULT NULL,
-  `delivery_status` varchar(50) DEFAULT NULL,
-  `payment_method` varchar(50) DEFAULT NULL,
-  `payment_status` varchar(50) DEFAULT 'Pending',
-  `stock_deducted` varchar(10) DEFAULT 'No',
-  `proof_image` varchar(255) DEFAULT NULL,
-  `payment_proof` varchar(255) DEFAULT NULL,
-  `address` varchar(255) DEFAULT NULL,
-  `contact_number` varchar(20) DEFAULT NULL,
-  `date_created` timestamp NULL DEFAULT current_timestamp(),
-  `payment_screenshot` varchar(255) DEFAULT NULL,
-  `payment_reference` varchar(100) DEFAULT NULL,
-  `payment_reject_reason` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Dumping data for table `orders`
---
-
-INSERT INTO `orders` (`id`, `customer_id`, `courier_id`, `total`, `order_status`, `delivery_status`, `payment_method`, `payment_status`, `stock_deducted`, `proof_image`, `payment_proof`, `address`, `contact_number`, `date_created`, `payment_screenshot`, `payment_reference`, `payment_reject_reason`) VALUES
-(1, 2, 3, 499.00, 'Processing', 'Out for Delivery', 'Cash on Delivery', 'Paid', 'No', '', NULL, 'Sample Address', '0912 123 1234', '2026-06-10 22:01:11', NULL, NULL, NULL),
-(2, 2, NULL, 499.00, 'Pending', 'Preparing', 'Cash on Delivery', 'Pending', 'No', '', NULL, 'Pasig', '0912 123 1234', '2026-06-11 00:12:29', NULL, NULL, NULL),
-(3, 2, NULL, 499.00, 'Pending', 'Preparing', 'GCash', 'Pending', 'No', '', NULL, 'Bridgetowne ', '0912 123 1234', '2026-06-11 00:43:44', NULL, NULL, NULL),
-(4, 2, NULL, 499.00, 'Pending', 'Preparing', 'GCash', 'Proof Submitted', 'No', '', NULL, 'Bridgetowne ', '0912 123 1234', '2026-06-11 01:13:56', 'payment_4_1781140513.png', '2041511124874', '');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `order_items`
---
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `customer_id` INT(11) DEFAULT NULL,
+    `courier_id` INT(11) DEFAULT NULL,
+    `total` DECIMAL(10,2) DEFAULT NULL,
+    `order_status` VARCHAR(50) DEFAULT NULL,
+    `delivery_status` VARCHAR(50) DEFAULT NULL,
+    `payment_method` VARCHAR(50) DEFAULT NULL,
+    `payment_status` VARCHAR(50) DEFAULT 'Pending',
+    `stock_deducted` VARCHAR(10) DEFAULT 'No',
+    `proof_image` VARCHAR(255) DEFAULT NULL,
+    `payment_proof` VARCHAR(255) DEFAULT NULL,
+    `address` VARCHAR(255) DEFAULT NULL,
+    `contact_number` VARCHAR(20) DEFAULT NULL,
+    `date_created` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    `payment_screenshot` VARCHAR(255) DEFAULT NULL,
+    `payment_reference` VARCHAR(100) DEFAULT NULL,
+    `payment_reject_reason` VARCHAR(255) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `customer_id` (`customer_id`),
+    KEY `courier_id` (`courier_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `order_items` (
-  `id` int(11) NOT NULL,
-  `order_id` int(11) DEFAULT NULL,
-  `product_id` int(11) DEFAULT NULL,
-  `quantity` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `order_id` INT(11) DEFAULT NULL,
+    `product_id` INT(11) DEFAULT NULL,
+    `quantity` INT(11) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `order_id` (`order_id`),
+    KEY `product_id` (`product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `order_items`
---
+CREATE TABLE `user_addresses` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `user_id` INT(11) NOT NULL,
+    `full_name` VARCHAR(150) NOT NULL,
+    `address_line1` VARCHAR(255) NOT NULL,
+    `address_line2` VARCHAR(255) DEFAULT NULL,
+    `city` VARCHAR(100) NOT NULL,
+    `province_region` VARCHAR(100) NOT NULL,
+    `postal_code` VARCHAR(20) NOT NULL,
+    `country` VARCHAR(100) NOT NULL DEFAULT 'Philippines',
+    `address` TEXT NOT NULL,
+    `contact_number` VARCHAR(20) NOT NULL,
+    `is_default` VARCHAR(5) NOT NULL DEFAULT 'No',
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `reorder_requests` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `product_id` INT(11) NOT NULL,
+    `supplier_name` VARCHAR(100) NOT NULL,
+    `supplier_email` VARCHAR(100) NOT NULL,
+    `message` TEXT NOT NULL,
+    `status` VARCHAR(20) NOT NULL DEFAULT 'Pending',
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `product_id` (`product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `users` (`id`, `fullname`, `username`, `password`, `role`, `account_status`, `last_login`) VALUES
+(1, 'Admin Account', 'admin', '$2y$12$wpRJXwpY3hnPp1.Vtm/Sb.kLHhMw2.rnZkCiLURPdnEDKyPm/bJoW', 'admin', 'Active', NOW()),
+(2, 'Customer Account', 'customer', '$2y$12$xvdSB8QdnTxghv7Mk/LalOGK21/sEP5UxU/9xRAx.F4mLusPJTfQq', 'customer', 'Active', NOW()),
+(3, 'Courier Account', 'courier', '$2y$12$8/MP86gyR7A/abMzPeMdeO8mUBxnxINoMJ9oqg3qTQ3FLPbSTF3VW', 'courier', 'Active', NOW()),
+(4, 'Eira', 'eira', '$2y$12$xG6cD4cZv4300WNLK0DTHucruiViBKYKOLIrN1ygITQlZlAbScd4S', 'customer', 'Active', NULL);
+
+INSERT INTO `products` (`id`, `name`, `price`, `stock`, `image`, `category`, `sku`, `color`, `size`) VALUES
+(1, 'RED EAST Warriors', 499.00, 17, '20f79e78-8c6e-43ad-a9fa-a6d71a5cd2c0.jpg', 'T-Shirt', 'MTF-T-SHIRT-WHITE-L-5709', 'White', 'L'),
+(2, 'RED EAST Warriors', 599.00, 15, '456625ac-43de-4e92-9bdc-deaee3ca48e7.jpg', 'T-Shirt', 'MTF-T-SHIRT-RED-L-5938', 'Red', 'L'),
+(3, 'RED EAST Warriors', 699.00, 5, 'edc5812f-2b7e-43be-a920-384df9dfdd20.jpg', 'T-Shirt', 'MTF-T-SHIRT-BLACK-L-4724', 'Black', 'L');
+
+INSERT INTO `user_addresses` (`id`, `user_id`, `full_name`, `address_line1`, `address_line2`, `city`, `province_region`, `postal_code`, `country`, `address`, `contact_number`, `is_default`) VALUES
+(1, 2, 'Andrei', 'Rosario', '', 'Pasig City', 'Metro Manila', '1609', 'Philippines', 'Rosario, Pasig City, Metro Manila, 1609, Philippines', '0912 123 1234', 'Yes');
+
+-- Optional sample orders for testing admin/courier pages.
+INSERT INTO `orders` (`id`, `customer_id`, `courier_id`, `total`, `order_status`, `delivery_status`, `payment_method`, `payment_status`, `stock_deducted`, `proof_image`, `payment_proof`, `address`, `contact_number`, `payment_screenshot`, `payment_reference`, `payment_reject_reason`) VALUES
+(1, 2, 3, 499.00, 'Processing', 'Out for Delivery', 'Cash on Delivery', 'Paid', 'Yes', '', NULL, 'Rosario, Pasig City, Metro Manila, 1609, Philippines', '0912 123 1234', '', '', ''),
+(2, 2, NULL, 499.00, 'Pending', 'Preparing', 'Cash on Delivery', 'To Collect', 'No', '', NULL, 'Rosario, Pasig City, Metro Manila, 1609, Philippines', '0912 123 1234', '', '', ''),
+(3, 2, 3, 599.00, 'Processing', 'Ready for Pickup', 'GCash', 'Pending Verification', 'No', '', NULL, 'Rosario, Pasig City, Metro Manila, 1609, Philippines', '0912 123 1234', '', '', '');
 
 INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`) VALUES
 (1, 1, 1, 1),
 (2, 2, 1, 1),
-(3, 3, 1, 1),
-(4, 4, 1, 1);
+(3, 3, 2, 1);
 
--- --------------------------------------------------------
-
---
--- Table structure for table `products`
---
-
-CREATE TABLE `products` (
-  `id` int(11) NOT NULL,
-  `name` varchar(100) DEFAULT NULL,
-  `price` decimal(10,2) DEFAULT NULL,
-  `stock` int(11) DEFAULT NULL,
-  `image` varchar(255) DEFAULT NULL,
-  `category` varchar(50) DEFAULT NULL,
-  `sku` varchar(100) DEFAULT NULL,
-  `color` varchar(50) DEFAULT NULL,
-  `size` varchar(50) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Dumping data for table `products`
---
-
-INSERT INTO `products` (`id`, `name`, `price`, `stock`, `image`, `category`, `sku`, `color`, `size`) VALUES
-(1, 'RED EAST Warriors', 499.00, 18, '20f79e78-8c6e-43ad-a9fa-a6d71a5cd2c0.jpg', 'T-Shirt', 'MTF-T-SHIRT-WHITE-L-5709', 'White', 'L'),
-(2, 'RED EAST Warriors', 599.00, 15, '456625ac-43de-4e92-9bdc-deaee3ca48e7.jpg', 'T-Shirt', 'MTF-T-SHIRT-RED-L-5938', 'Red', 'L'),
-(3, 'RED EAST Warriors', 699.00, 10, 'edc5812f-2b7e-43be-a920-384df9dfdd20.jpg', 'T-Shirt', 'MTF-T-SHIRT-BLACK-L-1317', 'Black', 'L');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `users`
---
-
-CREATE TABLE `users` (
-  `id` int(11) NOT NULL,
-  `fullname` varchar(100) DEFAULT NULL,
-  `username` varchar(50) DEFAULT NULL,
-  `password` varchar(100) DEFAULT NULL,
-  `role` varchar(20) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Dumping data for table `users`
---
-
-INSERT INTO `users` (`id`, `fullname`, `username`, `password`, `role`) VALUES
-(1, 'Admin Account', 'admin', '$2y$10$t6G/2q5/kFZfbfgXcJQFxuUV5DXgPRCoqhiAo48n/BqQXqOeLYBti', 'admin'),
-(2, 'Customer Account', 'customer', '$2y$10$..7RNSvt6LxfOEKua271fu40kE2MV3YEmdKUfaFCnEc0sL0fJbvaK', 'customer'),
-(3, 'Courier Account', 'courier', '$2y$10$XO6XHtQfoq/WXyz9bjN8w.xAx5.TIBrd1EIqBIjUxzplnw3W3QM.W', 'courier'),
-(4, 'Eira', 'eira', 'eira123', 'customer');
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `cart`
---
-ALTER TABLE `cart`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `orders`
---
-ALTER TABLE `orders`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `order_items`
---
-ALTER TABLE `order_items`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `products`
---
-ALTER TABLE `products`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `username` (`username`);
-
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `cart`
---
-ALTER TABLE `cart`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-
---
--- AUTO_INCREMENT for table `orders`
---
-ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `order_items`
---
-ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `products`
---
-ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT for table `users`
---
-ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
