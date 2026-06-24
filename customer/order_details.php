@@ -148,6 +148,7 @@ $order_data = mysqli_fetch_assoc($order);
     <title>Order Details</title>
     <link rel="stylesheet" type="text/css" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
 </head>
 <body class="bg-image">
 

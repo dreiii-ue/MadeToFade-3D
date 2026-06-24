@@ -218,6 +218,7 @@ $result = mysqli_query($conn, $sql);
 <head>
     <title>Courier Dashboard</title>
     <link rel="stylesheet" href="../css/style.css">
+    <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
 
     <script>
         function showProof(selectBox) {

@@ -40,6 +40,7 @@ $low_products = mysqli_query($conn,
         <title>Admin Dashboard</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
         <link rel="stylesheet" type="text/css" href="../css/style.css">
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     </head>
     <body>
         <div class="layout">

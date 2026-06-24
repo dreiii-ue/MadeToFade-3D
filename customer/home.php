@@ -205,6 +205,7 @@ $addresses = mysqli_query(
     <head>
         <title>Customer Dashboard</title>
         <link rel="stylesheet" type="text/css" href="../css/style.css">
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     </head>
     <body>
         <div class="navbar customer-navbar">
