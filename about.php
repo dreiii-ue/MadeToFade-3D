@@ -7,6 +7,7 @@ session_start();
         <title>About | Made To Fade</title>
         <link rel="stylesheet" type="text/css" href="css/style.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <link rel="icon" type="image/png" href="/images/logo.png">
     </head>
     <body>
         <div class="navbar">

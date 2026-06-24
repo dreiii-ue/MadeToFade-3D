@@ -22,6 +22,7 @@ if(isset($_POST['register'])){
     <head>
         <title>Register</title>
         <link rel="stylesheet" type="text/css" href="css/style.css">
+        <link rel="icon" type="image/png" href="/images/logo.png">
     </head>
     <body class="bg-image">
         <div class="navbar">

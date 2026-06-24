@@ -48,6 +48,7 @@ if(isset($_POST['login'])){
     <head>
         <title>Login</title>
         <link rel="stylesheet" type="text/css" href="css/style.css">
+        <link rel="icon" type="image/png" href="/images/logo.png">
     </head>
     <body class="bg-image">
         <div class="navbar">
