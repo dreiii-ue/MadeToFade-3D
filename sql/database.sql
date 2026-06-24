@@ -4,6 +4,7 @@
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS `product_reviews`;
 DROP TABLE IF EXISTS `reorder_requests`;
 DROP TABLE IF EXISTS `user_addresses`;
 DROP TABLE IF EXISTS `order_items`;
@@ -106,11 +107,29 @@ CREATE TABLE `reorder_requests` (
     `product_id` INT(11) NOT NULL,
     `supplier_name` VARCHAR(100) NOT NULL,
     `supplier_email` VARCHAR(100) NOT NULL,
+    `reorder_amount` INT(11) NOT NULL DEFAULT 1,
     `message` TEXT NOT NULL,
     `status` VARCHAR(20) NOT NULL DEFAULT 'Pending',
+    `stock_added` VARCHAR(5) NOT NULL DEFAULT 'No',
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `completed_at` DATETIME DEFAULT NULL,
     PRIMARY KEY (`id`),
     KEY `product_id` (`product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+CREATE TABLE `product_reviews` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `product_id` INT(11) NOT NULL,
+    `customer_id` INT(11) NOT NULL,
+    `order_id` INT(11) NOT NULL,
+    `rating` INT(1) NOT NULL,
+    `review_text` TEXT NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `unique_order_product_review` (`order_id`, `product_id`, `customer_id`),
+    KEY `product_id` (`product_id`),
+    KEY `customer_id` (`customer_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO `users` (`id`, `fullname`, `username`, `password`, `role`, `account_status`, `last_login`) VALUES

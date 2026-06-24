@@ -33,7 +33,8 @@ if(isset($_POST['register'])){
                 <a href="login.php">Login</a>
             </div>
         </div>
-        <div class="form-container">
+        <main class="auth-main">
+            <div class="form-container">
             <h1>Register</h1>
             <?php if(isset($error)){ ?><p><?php echo $error; ?></p><?php } ?>
             <form method="POST">
@@ -44,6 +45,33 @@ if(isset($_POST['register'])){
             </form>
             <p>Already have an account? <a href="login.php" class="underline">Login</a>
             </p>
+            </div>
+        </main>
+
+        <div class="footer site-footer">
+            <div class="footer-grid">
+                <div>
+                    <h3>MADE TO FADE</h3>
+                    <p>Minimal streetwear made for everyday wear.</p>
+                </div>
+
+                <div>
+                    <h4>Information</h4>
+                    <a href="about.php">About</a>
+                    <a href="services.php">Services</a>
+                    <a href="faq.php">FAQ</a>
+                    <a href="contact.php">Contact</a>
+                </div>
+
+                <div>
+                    <h4>Shop</h4>
+                    <a href="index.php#popular-products">Popular Products</a>
+                    <a href="index.php#shop-by-category">Product Categories</a>
+                    <a href="testimonials.php">Buyer Reviews</a>
+                </div>
+            </div>
+
+            <p class="footer-bottom">© 2026 Made To Fade. All rights reserved.</p>
         </div>
     </body>
 </html>

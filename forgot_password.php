@@ -47,6 +47,11 @@ if(isset($_POST['reset'])){
 
     <div>
         <a href="index.php">Home</a>
+                <a href="about.php">About</a>
+                <a href="services.php">Services</a>
+                <a href="faq.php">FAQ</a>
+                <a href="testimonials.php">Reviews</a>
+                <a href="contact.php">Contact</a>
         <a href="login.php">Login</a>
     </div>
 </div>

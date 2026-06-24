@@ -69,7 +69,10 @@ if(isset($_POST['reject_payment'])){
     mysqli_query($conn,
     "UPDATE orders 
      SET payment_status='Rejected',
-         payment_reject_reason='$reason'
+         payment_reject_reason='$reason',
+         courier_id=NULL,
+         order_status='Payment Rejected',
+         delivery_status='Preparing'
      WHERE id='$order_id'");
 
     header("Location: orders.php");

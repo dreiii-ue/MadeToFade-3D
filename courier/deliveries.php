@@ -196,7 +196,9 @@ $status = isset($_GET['status']) ? mysqli_real_escape_string($conn, $_GET['statu
 $sql = "SELECT orders.*, users.fullname
         FROM orders
         JOIN users ON orders.customer_id = users.id
-        WHERE orders.courier_id='$courier_id'";
+        WHERE orders.courier_id='$courier_id'
+        AND orders.payment_status != 'Rejected'
+        AND orders.order_status != 'Payment Rejected'";
 
 if ($search != "") {
     $sql .= " AND (users.fullname LIKE '%$search%' OR orders.id LIKE '%$search%')";
@@ -236,10 +238,18 @@ $result = mysqli_query($conn, $sql);
 </head>
 <body class="bg-image">
 
-<div class="navbar">
-    <h2>MADE TO FADE COURIER</h2>
+<div class="navbar customer-navbar courier-navbar">
+    <div class="logo-area">
+        <a href="deliveries.php" class="nav-logo-link">
+            <img src="../images/logo.png" alt="Made To Fade Logo">
+        </a>
+        <div class="nav-brand-text">
+            <strong>Courier Portal</strong>
+            <span>Delivery Management</span>
+        </div>
+    </div>
 
-    <div>
+    <div class="nav-links">
         <a href="deliveries.php">Deliveries</a>
         <a href="../logout.php">Logout</a>
     </div>

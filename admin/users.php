@@ -119,7 +119,7 @@ $result = mysqli_query($conn, $sql);
                 <br>
                 <br>
                 <div class="panel">
-                    <p>Users with no login activity for 3 months are automatically marked Inactive. Admin can also activate/deactivate manually.</p>
+                    <p>Users with no login activity for 3 months are automatically marked Inactive. If an inactive user tries to log in, they will be told to contact the administrator at support@madetofade.xyz or 0912 123 1234.</p>
                 </div>
 
                 
@@ -214,7 +214,21 @@ $result = mysqli_query($conn, $sql);
                         </td>
                         <td><?php echo $row['last_login']; ?></td>
                         <td>
-                            <a href="users.php?edit=<?php echo $row['id']; ?>" class="btn">Edit</a> <a href="users.php?toggle=<?php echo $row['id']; ?>" class="btn"><?php echo $row['account_status']=='Active'?'Deactivate':'Activate'; ?></a> <a href="users.php?delete=<?php echo $row['id']; ?>" class="btn" onclick="return confirm('Delete this user?')">Delete</a>
+                            <a href="users.php?edit=<?php echo $row['id']; ?>" class="btn">Edit</a>
+                            <a
+                                href="users.php?toggle=<?php echo $row['id']; ?>"
+                                class="btn"
+                                onclick="return confirm('<?php echo $row['account_status'] == 'Active' ? 'Are you sure you want to deactivate this account?' : 'Are you sure you want to activate this account?'; ?>')"
+                            >
+                                <?php echo $row['account_status'] == 'Active' ? 'Deactivate' : 'Activate'; ?>
+                            </a>
+                            <a
+                                href="users.php?delete=<?php echo $row['id']; ?>"
+                                class="btn"
+                                onclick="return confirm('Are you sure you want to delete this user?')"
+                            >
+                                Delete
+                            </a>
                         </td>
                     </tr>
                     <?php } ?>

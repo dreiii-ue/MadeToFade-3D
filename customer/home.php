@@ -107,6 +107,8 @@ if (isset($_POST['add_address'])) {
 
     if (!preg_match("/^09[0-9]{2} [0-9]{3} [0-9]{4}$/", $contact_number)) {
         $error = "Invalid phone number format. Use 0912 123 1234.";
+    } elseif (!preg_match("/^[0-9]+$/", $postal_code)) {
+        $error = "Postal code must contain numbers only.";
     } else {
         $address_data = [
             'address_line1' => $address_line1,
@@ -205,12 +207,14 @@ $addresses = mysqli_query(
         <link rel="stylesheet" type="text/css" href="../css/style.css">
     </head>
     <body>
-        <div class="navbar">
+        <div class="navbar customer-navbar">
             <div class="logo-area">
-                <img src="../images/logo.png" alt="Logo">
+                <a href="../index.php" class="nav-logo-link">
+                    <img src="../images/logo.png" alt="Made To Fade Logo">
+                </a>
             </div>
 
-            <div>
+            <div class="nav-links">
                 <a href="../index.php">Shop</a>
                 <a href="home.php">Dashboard</a>
                 <a href="cart.php">Cart</a>
@@ -338,7 +342,7 @@ $addresses = mysqli_query(
                             <input type="text" name="province_region" placeholder="Province or Region" required>
 
                             <label>Postal Code</label>
-                            <input type="text" name="postal_code" placeholder="Postal Code" required>
+                            <input type="text" name="postal_code" placeholder="Postal Code" inputmode="numeric" pattern="[0-9]+" maxlength="10" required>
 
                             <label>Country</label>
                             <input type="text" name="country" value="Philippines" required>

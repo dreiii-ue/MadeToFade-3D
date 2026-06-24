@@ -31,19 +31,21 @@ $order_history = mysqli_query($conn,
 </head>
 <body class="bg-image">
 
-<div class="navbar">
-    <div class="logo-area">
-        <img src="../images/logo.png" alt="Logo">
-    </div>
+<div class="navbar customer-navbar">
+            <div class="logo-area">
+                <a href="../index.php" class="nav-logo-link">
+                    <img src="../images/logo.png" alt="Made To Fade Logo">
+                </a>
+            </div>
 
-    <div>
-        <a href="../index.php">Shop</a>
-        <a href="home.php">Dashboard</a>
-        <a href="cart.php">Cart</a>
-        <a href="orders.php">My Orders</a>
-        <a href="../logout.php">Logout</a>
-    </div>
-</div>
+            <div class="nav-links">
+                <a href="../index.php">Shop</a>
+                <a href="home.php">Dashboard</a>
+                <a href="cart.php">Cart</a>
+                <a href="orders.php">My Orders</a>
+                <a href="../logout.php">Logout</a>
+            </div>
+        </div>
 
 <div class="admin-container">
 

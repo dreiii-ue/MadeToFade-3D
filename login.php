@@ -14,7 +14,7 @@ if(isset($_POST['login'])){
         $user = mysqli_fetch_assoc($result);
 
         if(isset($user['account_status']) && $user['account_status'] == "Inactive"){
-            $error = "Your account is inactive. Please contact the admin.";
+            $error = "Your account has been deactivated. Please contact the administrator at support@madetofade.xyz or 0912 123 1234.";
         }
         else{
             $valid_password = password_verify($password, $user['password']);
@@ -59,7 +59,8 @@ if(isset($_POST['login'])){
                 <a href="register.php">Register</a>
             </div>
         </div>
-        <div class="form-container">
+        <main class="auth-main">
+            <div class="form-container">
             <h1>Login</h1>
             <?php if(isset($error)){ ?><p><?php echo $error; ?></p><?php } ?>
             <form method="POST">
@@ -68,8 +69,40 @@ if(isset($_POST['login'])){
                 <button type="submit" name="login">Login</button>
             </form>
             <p>
-            <a href="forgot_password.php">Forgot Password?</a>
+                <a href="forgot_password.php">Forgot Password?</a>
             </p>
+
+            <p>
+                Don't have an account yet?
+                <a href="register.php" class="underline">Create an account</a>
+            </p>
+            </div>
+        </main>
+
+        <div class="footer site-footer">
+            <div class="footer-grid">
+                <div>
+                    <h3>MADE TO FADE</h3>
+                    <p>Minimal streetwear made for everyday wear.</p>
+                </div>
+
+                <div>
+                    <h4>Information</h4>
+                    <a href="about.php">About</a>
+                    <a href="services.php">Services</a>
+                    <a href="faq.php">FAQ</a>
+                    <a href="contact.php">Contact</a>
+                </div>
+
+                <div>
+                    <h4>Shop</h4>
+                    <a href="index.php#popular-products">Popular Products</a>
+                    <a href="index.php#shop-by-category">Product Categories</a>
+                    <a href="testimonials.php">Buyer Reviews</a>
+                </div>
+            </div>
+
+            <p class="footer-bottom">© 2026 Made To Fade. All rights reserved.</p>
         </div>
     </body>
 </html>

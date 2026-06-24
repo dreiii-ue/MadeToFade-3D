@@ -74,6 +74,10 @@ if (isset($_POST['checkout'])) {
             die("Invalid phone number format. Use 0912 123 1234.");
         }
 
+        if (!preg_match("/^[0-9]+$/", $postal_code)) {
+            die("Postal code must contain numbers only.");
+        }
+
         $address_data = [
             'address_line1' => $address_line1,
             'address_line2' => $address_line2,

@@ -80,13 +80,17 @@ $total = 0;
     <head>
         <title>My Cart</title>
         <link rel="stylesheet" type="text/css" href="../css/style.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     </head>
     <body>
-        <div class="navbar">
+        <div class="navbar customer-navbar">
             <div class="logo-area">
-                <img src="../images/logo.png" alt="Logo">
+                <a href="../index.php" class="nav-logo-link">
+                    <img src="../images/logo.png" alt="Made To Fade Logo">
+                </a>
             </div>
-            <div>
+
+            <div class="nav-links">
                 <a href="../index.php">Shop</a>
                 <a href="home.php">Dashboard</a>
                 <a href="cart.php">Cart</a>
@@ -96,43 +100,87 @@ $total = 0;
         </div>
         <div class="admin-container">
             <h1>My Cart</h1>
-            <table>
-                <tr>
-                    <th>Image</th>
-                    <th>Product</th>
-                    <th>Price</th>
-                    <th>Qty</th>
-                    <th>Subtotal</th>
-                    <th>Action</th>
-                </tr>
-                <?php while($row = mysqli_fetch_assoc($result)){ $subtotal = $row['price'] * $row['quantity']; $total += $subtotal; ?>
-                <tr>
-                    <td>
-                        <img src="../images/<?php echo $row['image']; ?>">
-                    </td>
-                    <td><?php echo $row['name']; ?><br>
-                        <small>Stock: <?php echo $row['stock']; ?></small>
-                    </td>
-                    <td>₱<?php echo $row['price']; ?></td>
-                    <td>
-                        <form method="POST" class="qty-control">
-                            <input type="hidden" name="cart_id" value="<?php echo $row['id']; ?>">
-                            <button type="submit" name="action" value="subtract" class="small-btn">-</button>
-                            <input type="text" value="<?php echo $row['quantity']; ?>" readonly>
-                            <button type="submit" name="action" value="add" class="small-btn">+</button>
-                            <input type="hidden" name="update_qty" value="1">
-                        </form>
-                    </td>
-                    <td>₱<?php echo $subtotal; ?></td>
-                    <td>
-                        <a href="cart.php?remove=<?php echo $row['id']; ?>" class="btn" onclick="return confirm('Remove this item?')">Remove</a>
-                    </td>
-                </tr>
-                <?php } ?>
-            </table>
-            <br>
-            <h2>Total: ₱<?php echo $total; ?></h2>
-            <?php if ($total > 0) { ?>
+            <p class="checkout-note">Use the plus and minus buttons to adjust product quantity before checking out.</p>
+
+            <?php if (mysqli_num_rows($result) > 0) { ?>
+                <table>
+                    <tr>
+                        <th>Image</th>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Subtotal</th>
+                        <th>Action</th>
+                    </tr>
+
+                    <?php while ($row = mysqli_fetch_assoc($result)) { ?>
+                        <?php
+                        $subtotal = $row['price'] * $row['quantity'];
+                        $total += $subtotal;
+                        ?>
+
+                        <tr>
+                            <td>
+                                <img src="../images/<?php echo htmlspecialchars($row['image']); ?>" alt="<?php echo htmlspecialchars($row['name']); ?>">
+                            </td>
+
+                            <td>
+                                <?php echo htmlspecialchars($row['name']); ?><br>
+                                <small>Stock: <?php echo $row['stock']; ?></small>
+                            </td>
+
+                            <td>₱<?php echo number_format($row['price'], 2); ?></td>
+
+                            <td>
+                                <form method="POST" class="qty-control">
+                                    <input type="hidden" name="cart_id" value="<?php echo $row['id']; ?>">
+
+                                    <button
+                                        type="submit"
+                                        name="action"
+                                        value="subtract"
+                                        class="small-btn qty-btn"
+                                        aria-label="Decrease quantity"
+                                    >−</button>
+
+                                    <input
+                                        type="text"
+                                        class="qty-value"
+                                        value="<?php echo $row['quantity']; ?>"
+                                        readonly
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        name="action"
+                                        value="add"
+                                        class="small-btn qty-btn"
+                                        aria-label="Increase quantity"
+                                    >+</button>
+
+                                    <input type="hidden" name="update_qty" value="1">
+                                </form>
+                            </td>
+
+                            <td>₱<?php echo number_format($subtotal, 2); ?></td>
+
+                            <td>
+                                <a
+                                    href="cart.php?remove=<?php echo $row['id']; ?>"
+                                    class="btn"
+                                    onclick="return confirm('Remove this item?')"
+                                >
+                                    Remove
+                                </a>
+                            </td>
+                        </tr>
+                    <?php } ?>
+                </table>
+
+                <br>
+
+                <h2>Total: ₱<?php echo number_format($total, 2); ?></h2>
+
                 <div class="panel">
                     <h2>Checkout Details</h2>
                     <p class="muted-text">
@@ -197,7 +245,7 @@ $total = 0;
 
                             <div>
                                 <label>Postal Code</label>
-                                <input type="text" name="postal_code" placeholder="Postal Code" required>
+                                <input type="text" name="postal_code" placeholder="Postal Code" inputmode="numeric" pattern="[0-9]+" maxlength="10" required>
                             </div>
 
                             <div>
@@ -221,6 +269,19 @@ $total = 0;
                             <button type="submit" name="checkout" class="btn">Checkout</button>
                         </div>
                     </form>
+                </div>
+            <?php } else { ?>
+                <div class="panel empty-cart-panel">
+                    <div class="empty-cart-icon">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </div>
+
+                    <h2>Your cart is empty</h2>
+                    <p>Add items first before checking out.</p>
+
+                    <a href="../index.php#popular-products" class="btn">
+                        Shop Now
+                    </a>
                 </div>
             <?php } ?>
         </div>

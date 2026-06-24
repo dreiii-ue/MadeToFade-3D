@@ -7,30 +7,122 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] != "admin") {
     exit();
 }
 
+function columnExists($conn, $table, $column)
+{
+    $table = mysqli_real_escape_string($conn, $table);
+    $column = mysqli_real_escape_string($conn, $column);
+
+    $result = mysqli_query(
+        $conn,
+        "SHOW COLUMNS FROM `$table` LIKE '$column'"
+    );
+
+    return $result && mysqli_num_rows($result) > 0;
+}
+
+function ensureReorderColumns($conn)
+{
+    if (!columnExists($conn, 'reorder_requests', 'reorder_amount')) {
+        mysqli_query(
+            $conn,
+            "ALTER TABLE reorder_requests
+             ADD COLUMN reorder_amount INT(11) NOT NULL DEFAULT 1 AFTER supplier_email"
+        );
+    }
+
+    if (!columnExists($conn, 'reorder_requests', 'stock_added')) {
+        mysqli_query(
+            $conn,
+            "ALTER TABLE reorder_requests
+             ADD COLUMN stock_added VARCHAR(5) NOT NULL DEFAULT 'No' AFTER status"
+        );
+    }
+
+    if (!columnExists($conn, 'reorder_requests', 'completed_at')) {
+        mysqli_query(
+            $conn,
+            "ALTER TABLE reorder_requests
+             ADD COLUMN completed_at DATETIME DEFAULT NULL AFTER created_at"
+        );
+    }
+}
+
+ensureReorderColumns($conn);
+
 if (isset($_POST['submit_reorder'])) {
     $product_id = (int)$_POST['product_id'];
     $supplier_name = mysqli_real_escape_string($conn, $_POST['supplier_name']);
     $supplier_email = mysqli_real_escape_string($conn, $_POST['supplier_email']);
+    $reorder_amount = (int)$_POST['reorder_amount'];
     $message = mysqli_real_escape_string($conn, $_POST['message']);
 
-    mysqli_query(
-        $conn,
-        "INSERT INTO reorder_requests(product_id, supplier_name, supplier_email, message, status)
-         VALUES('$product_id', '$supplier_name', '$supplier_email', '$message', 'Pending')"
-    );
+    if ($reorder_amount <= 0) {
+        $error = "Reorder amount must be at least 1.";
+    } else {
+        $insert_result = mysqli_query(
+            $conn,
+            "INSERT INTO reorder_requests(
+                product_id,
+                supplier_name,
+                supplier_email,
+                reorder_amount,
+                message,
+                status,
+                stock_added
+             )
+             VALUES(
+                '$product_id',
+                '$supplier_name',
+                '$supplier_email',
+                '$reorder_amount',
+                '$message',
+                'Pending',
+                'No'
+             )"
+        );
 
-    $success = "Reorder request submitted.";
+        if ($insert_result) {
+            $success = "Reorder request submitted.";
+        } else {
+            $error = "Reorder request failed: " . mysqli_error($conn);
+        }
+    }
 }
 
 if (isset($_GET['complete'])) {
     $id = (int)$_GET['complete'];
 
-    mysqli_query(
+    $request_result = mysqli_query(
         $conn,
-        "UPDATE reorder_requests
-         SET status='Completed'
-         WHERE id='$id'"
+        "SELECT * FROM reorder_requests
+         WHERE id='$id'
+         LIMIT 1"
     );
+
+    $request = mysqli_fetch_assoc($request_result);
+
+    if ($request && $request['status'] != 'Completed') {
+        $product_id = (int)$request['product_id'];
+        $reorder_amount = (int)$request['reorder_amount'];
+
+        if ($request['stock_added'] != 'Yes') {
+            mysqli_query(
+                $conn,
+                "UPDATE products
+                 SET stock = stock + $reorder_amount
+                 WHERE id='$product_id'"
+            );
+        }
+
+        mysqli_query(
+            $conn,
+            "UPDATE reorder_requests
+             SET status='Completed',
+                 stock_added='Yes',
+                 completed_at=NOW()
+             WHERE id='$id'"
+        );
+    }
 
     header("Location: reorders.php");
     exit();
@@ -116,6 +208,10 @@ $requests = mysqli_query(
                     <p class="success-msg"><?php echo $success; ?></p>
                 <?php } ?>
 
+                <?php if (isset($error)) { ?>
+                    <p class="error-msg"><?php echo $error; ?></p>
+                <?php } ?>
+
                 <div class="reorder-summary-grid">
                     <div class="reorder-summary-card">
                         <h3>Low Stock Products</h3>
@@ -176,6 +272,15 @@ $requests = mysqli_query(
                             <label>Supplier Name</label>
                             <input type="text" name="supplier_name" placeholder="Supplier name" required>
 
+                            <label>Reorder Amount</label>
+                            <input
+                                type="number"
+                                name="reorder_amount"
+                                placeholder="Example: 20"
+                                min="1"
+                                required
+                            >
+
                             <label>Supplier Email</label>
                             <input type="email" name="supplier_email" placeholder="supplier@email.com" required>
 
@@ -196,6 +301,7 @@ $requests = mysqli_query(
                             <th>Product</th>
                             <th>Supplier</th>
                             <th>Email</th>
+                            <th>Amount</th>
                             <th>Message</th>
                             <th>Status</th>
                             <th>Date</th>
@@ -214,6 +320,13 @@ $requests = mysqli_query(
 
                                 <td><?php echo $r['supplier_name']; ?></td>
                                 <td><?php echo $r['supplier_email']; ?></td>
+
+                                <td>
+                                    <strong><?php echo $r['reorder_amount']; ?></strong>
+                                    <br>
+                                    <small>pcs</small>
+                                </td>
+
                                 <td><?php echo $r['message']; ?></td>
 
                                 <td>
@@ -226,9 +339,15 @@ $requests = mysqli_query(
 
                                 <td>
                                     <?php if ($r['status'] != 'Completed') { ?>
-                                        <a class="btn" href="reorders.php?complete=<?php echo $r['id']; ?>">
+                                        <a
+                                            class="btn"
+                                            href="reorders.php?complete=<?php echo $r['id']; ?>"
+                                            onclick="return confirm('Mark this reorder as completed? The reorder amount will be added to product stock automatically.');"
+                                        >
                                             Complete
                                         </a>
+                                    <?php } else { ?>
+                                        <span class="status completed">Stock Added</span>
                                     <?php } ?>
                                 </td>
                             </tr>
