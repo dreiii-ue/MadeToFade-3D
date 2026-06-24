@@ -37,7 +37,7 @@ if(isset($_POST['reset'])){
 <head>
     <title>Forgot Password</title>
     <link rel="stylesheet" type="text/css" href="css/style.css">
-    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
 </head>
 <body class="bg-image">
 
