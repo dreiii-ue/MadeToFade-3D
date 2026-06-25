@@ -7,6 +7,39 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] != "customer") {
     exit();
 }
 
+
+mysqli_query(
+    $conn,
+    "CREATE TABLE IF NOT EXISTS payment_settings (
+        id INT(11) NOT NULL AUTO_INCREMENT,
+        payment_method VARCHAR(50) NOT NULL UNIQUE,
+        account_name VARCHAR(100) DEFAULT '',
+        account_number VARCHAR(100) DEFAULT '',
+        qr_image VARCHAR(255) DEFAULT '',
+        instructions TEXT DEFAULT NULL,
+        is_active VARCHAR(5) NOT NULL DEFAULT 'Yes',
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci"
+);
+
+$default_payment_methods = [
+    'GCash',
+    'Maya',
+    'QRPH',
+    'Bank Transfer'
+];
+
+foreach ($default_payment_methods as $method) {
+    $safe_method = mysqli_real_escape_string($conn, $method);
+
+    mysqli_query(
+        $conn,
+        "INSERT IGNORE INTO payment_settings(payment_method, account_name, instructions, is_active)
+         VALUES('$safe_method', 'Made To Fade', 'Please pay the exact total amount and upload your proof of payment.', 'Yes')"
+    );
+}
+
 mysqli_query(
     $conn,
     "CREATE TABLE IF NOT EXISTS product_reviews (
@@ -140,6 +173,24 @@ $order = mysqli_query(
 );
 
 $order_data = mysqli_fetch_assoc($order);
+
+
+$payment_setting = null;
+
+if ($order_data['payment_method'] != "Cash on Delivery") {
+    $safe_payment_method = mysqli_real_escape_string($conn, $order_data['payment_method']);
+
+    $payment_setting_result = mysqli_query(
+        $conn,
+        "SELECT *
+         FROM payment_settings
+         WHERE payment_method='$safe_payment_method'
+         LIMIT 1"
+    );
+
+    $payment_setting = mysqli_fetch_assoc($payment_setting_result);
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -207,6 +258,48 @@ $order_data = mysqli_fetch_assoc($order);
             </p>
         <?php } ?>
     </div>
+
+
+    <?php if ($order_data['payment_method'] != "Cash on Delivery" && $order_data['payment_status'] != "Paid") { ?>
+        <div class="panel payment-instructions-panel">
+            <div class="payment-instructions-grid">
+                <div>
+                    <h2><?php echo htmlspecialchars($order_data['payment_method']); ?> Payment</h2>
+                    <p class="muted-text">Scan the QR code or use the account details below. Pay the exact total amount.</p>
+
+                    <div class="payment-detail-list">
+                        <p><strong>Total Amount:</strong> ₱<?php echo number_format($order_data['total'], 2); ?></p>
+
+                        <?php if ($payment_setting) { ?>
+                            <p><strong>Account Name:</strong> <?php echo htmlspecialchars($payment_setting['account_name']); ?></p>
+                            <p><strong>Account Number:</strong> <?php echo htmlspecialchars($payment_setting['account_number']); ?></p>
+
+                            <?php if ($payment_setting['instructions'] != '') { ?>
+                                <p><strong>Instructions:</strong> <?php echo nl2br(htmlspecialchars($payment_setting['instructions'])); ?></p>
+                            <?php } ?>
+                        <?php } else { ?>
+                            <p class="error-msg">Payment details are not available yet. Please contact the admin.</p>
+                        <?php } ?>
+                    </div>
+                </div>
+
+                <div class="payment-qr-card">
+                    <?php if ($payment_setting && $payment_setting['qr_image'] != '') { ?>
+                        <img
+                            src="../uploads/payment_qr/<?php echo htmlspecialchars($payment_setting['qr_image']); ?>"
+                            alt="<?php echo htmlspecialchars($order_data['payment_method']); ?> QR Code"
+                            class="payment-qr-image"
+                        >
+                    <?php } else { ?>
+                        <div class="payment-qr-empty customer-qr-empty">
+                            <i class="fa-solid fa-qrcode"></i>
+                            <p>No QR code uploaded yet.</p>
+                        </div>
+                    <?php } ?>
+                </div>
+            </div>
+        </div>
+    <?php } ?>
 
     <?php if ($order_data['payment_method'] != "Cash on Delivery" && $order_data['payment_status'] != "Paid") { ?>
         <div class="panel">

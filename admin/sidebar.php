@@ -31,6 +31,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
     </i>
     Reorders
     </a>
+    <a href="payment_settings.php" class="menu-item <?php if($current_page == 'payment_settings.php') echo 'active'; ?>">
+    <i class="fa-solid fa-qrcode">
+    </i>
+    Payment Settings
+    </a>
     <a href="users.php" class="menu-item <?php if($current_page == 'users.php') echo 'active'; ?>">
     <i class="fa-solid fa-users">
     </i>

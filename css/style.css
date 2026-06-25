@@ -2172,3 +2172,113 @@ html {
         font-size: 11px;
     }
 }
+
+
+/* PAYMENT SETTINGS AND QR DISPLAY */
+.payment-settings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.payment-setting-card {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.payment-setting-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.payment-setting-header h2 {
+    margin-bottom: 6px;
+}
+
+.payment-settings-form {
+    display: grid;
+    gap: 10px;
+}
+
+.payment-settings-form label {
+    font-weight: 700;
+    color: var(--black);
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+}
+
+.checkbox-line {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    font-size: 14px !important;
+}
+
+.checkbox-line input {
+    width: auto;
+}
+
+.payment-qr-preview-box,
+.payment-qr-card {
+    background: var(--soft);
+    border: 1px solid var(--light-gray);
+    padding: 18px;
+    text-align: center;
+}
+
+.payment-qr-preview,
+.payment-qr-image {
+    width: 260px;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    background: white;
+    border: 1px solid var(--light-gray);
+    padding: 10px;
+}
+
+.payment-qr-empty {
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    background: white;
+    border: 1px dashed var(--light-gray);
+}
+
+.payment-qr-empty i {
+    font-size: 42px;
+    color: var(--black);
+    margin-bottom: 12px;
+}
+
+.customer-qr-empty {
+    min-height: 260px;
+}
+
+.payment-instructions-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    align-items: start;
+}
+
+.payment-detail-list p {
+    line-height: 1.6;
+}
+
+@media (max-width: 1000px) {
+    .payment-settings-grid,
+    .payment-instructions-grid {
+        grid-template-columns: 1fr;
+    }
+}
